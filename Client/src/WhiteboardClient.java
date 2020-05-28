@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.regex.Pattern;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -60,6 +61,17 @@ public class WhiteboardClient extends Application {
                 if (StringHelper.isNullOrEmpty(userName)) {
                     throw new IllegalArgumentException(
                             "Invalid username: It must not be NULL or empty.");
+                } else {
+                    Pattern pattern = Pattern
+                            .compile(Constants.USER_NAME_REGULAR_EXPRESSION);
+                    boolean valid = (userName != null)
+                            && pattern.matcher(userName).matches();
+                    if (!valid) {
+                        throw new IllegalArgumentException(
+                                "Invalid username: It must match with "
+                                        + Constants.USER_NAME_REGULAR_EXPRESSION
+                                        + " regular expression.");
+                    }
                 }
 
                 SocketHandler handler = SocketHandler.getInstance();

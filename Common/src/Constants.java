@@ -3,7 +3,9 @@
  */
 public class Constants {
 
+    /** The Constant DEFAULT_FONT_SIZE. */
     public static final double DEFAULT_FONT_SIZE = 18;
+
     /** The Constant MIN_PORT_NUMBER. */
     public static final int MIN_PORT_NUMBER = 1024;
 
@@ -42,6 +44,9 @@ public class Constants {
 
     /** The Constant GRAPHIC_LINE_WIDTH. */
     public static final double GRAPHIC_LINE_WIDTH = 1;
+
+    /** The Constant USER_NAME_REGULAR_EXPRESSION. */
+    public static final String USER_NAME_REGULAR_EXPRESSION = "[A-Za-z0-9_]+";
 
     /** The new line. */
     public static final String NEW_LINE = System.getProperty("line.separator");
