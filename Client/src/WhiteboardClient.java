@@ -37,7 +37,42 @@ public class WhiteboardClient extends Application {
      * @param args the arguments
      */
     public static void main(String[] args) {
-        Application.launch(args);
+        if (args.length < 3) {
+            System.out.println(
+                    "The host address, port, and username should be specified in command line arguments.");
+        } else if (args.length > 3) {
+            System.out.println(
+                    "The number of command line arguments is invalid.");
+        } else {
+            try {
+                String hostAddress = args[0];
+                int port = Integer.parseInt(args[1]);
+                String userName = args[2];
+
+                if (port < Constants.MIN_PORT_NUMBER
+                        || port > Constants.MAX_PORT_NUMBER) {
+                    throw new IllegalArgumentException("Invalid port number: "
+                            + port + ". It must be in range ("
+                            + Constants.MIN_PORT_NUMBER + ", "
+                            + Constants.MAX_PORT_NUMBER + ").");
+                }
+
+                if (StringHelper.isNullOrEmpty(userName)) {
+                    throw new IllegalArgumentException(
+                            "Invalid username: It must not be NULL or empty.");
+                }
+
+                SocketHandler handler = SocketHandler.getInstance();
+                handler.setPort(port);
+                handler.setHostAddress(hostAddress);
+                handler.setUserName(userName);
+
+                Application.launch(args);
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+
     }
 
     /**
