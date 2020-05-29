@@ -56,7 +56,7 @@ public class AcceptorJob extends AbstractJob {
                 SocketManager.getInstance().put(connection);
 
                 // Notify message to the main scene.
-                MessageNotifier.getInstance()
+                ChangeNotifier.getInstance()
                         .onMessageChanged(String.format(
                                 "Accepted a new client connection [%s]",
                                 client.getInetAddress().getHostAddress()));

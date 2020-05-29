@@ -43,8 +43,15 @@ public class TryConnectJob extends AbstractJob {
 
                 // Establish connection to socket server.
                 String message = handler.connect();
+
+                // Notify the message changed
                 updateMessage(message);
-                MessageNotifier.getInstance().onMessageChanged(message);
+                ChangeNotifier.getInstance().onMessageChanged(message);
+
+                // Notify connection status changed
+                if (handler.isConnected()) {
+                    ChangeNotifier.getInstance().onConnectionChanged(true);
+                }
             }
         }
 

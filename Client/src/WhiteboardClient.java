@@ -29,7 +29,7 @@ import javafx.stage.Stage;
  * 
  * The Class WhiteboardClient.
  */
-public class WhiteboardClient extends Application {
+public class WhiteboardClient extends Application implements ScenceCallback {
 
     /** The main canvas. */
     private CanvasEx canvas;
@@ -99,10 +99,12 @@ public class WhiteboardClient extends Application {
                     }
                 }
 
+                // Update socket communication information
                 SocketHandler handler = SocketHandler.getInstance();
                 handler.setPort(port);
                 handler.setHostAddress(hostAddress);
 
+                // Update user information
                 UserInformation userInformation = UserInformation.getInstance();
                 userInformation.setUserName(userName);
                 userInformation.setOperation(operatioEnum);
@@ -153,6 +155,31 @@ public class WhiteboardClient extends Application {
         stage.show();
     }
 
+    /**
+     * Initialize.
+     */
+    private void initialize() {
+        // Register call backs
+        ChangeNotifier.getInstance().registerSceneCallback(this);
+
+        // Instantiate needed jobs.
+        this.pingJob = new PingJob();
+        this.tryConnectJob = new TryConnectJob();
+        this.retrieveMsgJob = new RetrieveMsgJob();
+
+        try {
+            this.jobExecutor = new ThreadPoolJobExecutor(-1, 3, 3);
+            this.jobExecutor.queue(this.pingJob);
+            this.jobExecutor.queue(this.tryConnectJob);
+            this.jobExecutor.queue(this.retrieveMsgJob);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Stop.
+     */
     @Override
     public void stop() {
         try {
@@ -167,25 +194,6 @@ public class WhiteboardClient extends Application {
             SocketHandler.getInstance().cleanUp();
         } catch (TimeoutException e) {
             this.jobExecutor.forceInterrupt();
-        }
-    }
-
-    /**
-     * Initialize.
-     */
-    private void initialize() {
-        // Instantiate needed jobs.
-        this.pingJob = new PingJob();
-        this.tryConnectJob = new TryConnectJob();
-        this.retrieveMsgJob = new RetrieveMsgJob();
-
-        try {
-            this.jobExecutor = new ThreadPoolJobExecutor(-1, 3, 3);
-            this.jobExecutor.queue(this.pingJob);
-            this.jobExecutor.queue(this.tryConnectJob);
-            this.jobExecutor.queue(this.retrieveMsgJob);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -351,6 +359,28 @@ public class WhiteboardClient extends Application {
                         Constants.PNG_FILE_FILTER));
 
         return fileChooser;
+    }
+
+    /**
+     * On message changed.
+     *
+     * @param newMessage the new message
+     */
+    @Override
+    public void onMessageChanged(String newMessage) {
+        // Do nothing here
+
+    }
+
+    /**
+     * On connection status changed.
+     *
+     * @param isConnected the is connected
+     */
+    @Override
+    public void onConnectionStatusChanged(boolean isConnected) {
+        // TODO Auto-generated method stub
+
     }
 
 }
