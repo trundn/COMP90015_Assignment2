@@ -23,6 +23,7 @@ public class PingJob extends AbstractJob {
             if (!StringHelper.isNullOrEmpty(error)) {
                 handler.setConnected(false);
                 updateMessage("Failed to ping to server. Error: " + error);
+                ChangeNotifier.getInstance().onConnectionChanged(false);
             }
 
             TimeUnit.SECONDS.sleep(3);

@@ -51,10 +51,57 @@ public class RequestProcessJob extends AbstractJob {
     @Override
     protected Void call() throws Exception {
         if (!this.isCancelled()) {
-
+            if (request
+                    .containsKey(Constants.HANDSHAKE_ESTABLISHMENT_REQUEST)) {
+                handleHandshakeEstablishment(request);
+            }
         }
 
         return null;
+    }
+
+    /**
+     * Handle handshake establishment.
+     *
+     * @param request the request
+     */
+    @SuppressWarnings("unchecked")
+    private void handleHandshakeEstablishment(JSONObject request) {
+        JSONObject messageContent;
+        messageContent = (JSONObject) request
+                .get(Constants.HANDSHAKE_ESTABLISHMENT_REQUEST);
+
+        // Extract user name and manager role values
+        String userName = messageContent.get(Constants.USER_NAME_ATTR)
+                .toString();
+        boolean isManager = Boolean.parseBoolean(
+                messageContent.get(Constants.MANAGER_ROLE_ATTR).toString());
+
+        String acknowledgment = Constants.ACK_OK;
+        if (isManager) {
+            SocketConnection managerRoleConnection = SocketManager.getInstance()
+                    .anyUsersWithManagerRole();
+            if (managerRoleConnection != null) {
+                // Do not allow 2 users to have a manager role
+                isManager = false;
+                acknowledgment = Constants.ACK_NG;
+                // Identify connection with manger role
+                SocketManager.getInstance()
+                        .setManagerRoleConnection(managerRoleConnection);
+            }
+        }
+
+        // Update user information
+        this.connection.setUserName(userName);
+        this.connection.setManager(isManager);
+
+        // Send response acknowledgement to client
+        JSONObject response = new JSONObject();
+        JSONObject reponseContent = new JSONObject();
+
+        reponseContent.put(Constants.ACK_ATTR, acknowledgment);
+        response.put(Constants.HANDSHAKE_ACKNOWLEDGMENT, reponseContent);
+        this.sendResponse(response);
     }
 
 }

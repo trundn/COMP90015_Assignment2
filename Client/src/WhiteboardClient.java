@@ -3,12 +3,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
 import org.json.simple.JSONObject;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
@@ -21,11 +23,14 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 /**
  * 
@@ -33,8 +38,26 @@ import javafx.stage.Stage;
  */
 public class WhiteboardClient extends Application implements ScenceCallback {
 
+    /** The owner. */
+    private Window owner;
+
+    /** The toolbar V box. */
+    private VBox toolbarVBox;
+
     /** The main canvas. */
     private CanvasEx canvas;
+
+    /** The line button. */
+    private ToggleButton lineButton;
+
+    /** The circle button. */
+    private ToggleButton circleButton;
+
+    /** The rectangle button. */
+    private ToggleButton rectButton;
+
+    /** The text button. */
+    private ToggleButton textButton;
 
     /** The ping job. */
     private PingJob pingJob;
@@ -156,6 +179,9 @@ public class WhiteboardClient extends Application implements ScenceCallback {
         // Disable maximum button
         stage.setResizable(false);
 
+        // Keep owner window
+        this.owner = scene.getWindow();
+
         // Display the Stage
         stage.show();
     }
@@ -209,16 +235,14 @@ public class WhiteboardClient extends Application implements ScenceCallback {
      */
     private VBox createToolbar() {
         // Create toggle buttons
-        ToggleButton lineButton = new ToggleButton(Constants.LINE_BUTTON_TEXT);
-        ToggleButton circleButton = new ToggleButton(
-                Constants.CIRCLE_BUTTON_TEXT);
-        ToggleButton rectButton = new ToggleButton(
-                Constants.RECTANGLE_BUTTON_TEXT);
-        ToggleButton textButton = new ToggleButton(Constants.TEXT_BUTTON_TEXT);
+        this.lineButton = new ToggleButton(Constants.LINE_BUTTON_TEXT);
+        this.circleButton = new ToggleButton(Constants.CIRCLE_BUTTON_TEXT);
+        this.rectButton = new ToggleButton(Constants.RECTANGLE_BUTTON_TEXT);
+        this.textButton = new ToggleButton(Constants.TEXT_BUTTON_TEXT);
 
         // Create toggle button group
-        ToggleButton[] toogleButtonList = { lineButton, circleButton,
-                rectButton, textButton };
+        ToggleButton[] toogleButtonList = { this.lineButton, this.circleButton,
+                this.rectButton, this.textButton };
         ToggleGroup toogleGroup = new ToggleGroup();
 
         for (ToggleButton button : toogleButtonList) {
@@ -228,28 +252,28 @@ public class WhiteboardClient extends Application implements ScenceCallback {
         }
 
         // Register action for Line toggle button
-        lineButton.setOnAction(evt -> {
+        this.lineButton.setOnAction(evt -> {
             if (lineButton.isSelected()) {
                 this.canvas.setDrawToolType(DrawToolType.LINE);
             }
         });
 
         // Register action for Circle toggle button
-        circleButton.setOnAction(evt -> {
+        this.circleButton.setOnAction(evt -> {
             if (circleButton.isSelected()) {
                 this.canvas.setDrawToolType(DrawToolType.CIRCLE);
             }
         });
 
         // Register action for Rectangle toggle button
-        rectButton.setOnAction(evt -> {
+        this.rectButton.setOnAction(evt -> {
             if (rectButton.isSelected()) {
                 this.canvas.setDrawToolType(DrawToolType.RECTANGLE);
             }
         });
 
         // Register action for Text toggle button
-        textButton.setOnAction(evt -> {
+        this.textButton.setOnAction(evt -> {
             if (textButton.isSelected()) {
                 this.canvas.setDrawToolType(DrawToolType.TEXT);
             }
@@ -266,14 +290,14 @@ public class WhiteboardClient extends Application implements ScenceCallback {
                 });
 
         // Build Tool bar VBox
-        VBox vBox = new VBox(Constants.VBOX_SPACING);
-        vBox.getChildren().addAll(lineButton, circleButton, rectButton,
-                textButton, textArea);
-        vBox.setPadding(new Insets(Constants.VBOX_PADDING));
-        vBox.setStyle(Constants.DRAW_TOOLS_BACKGROUND_COLOR);
-        vBox.setPrefWidth(Constants.VBOX_PREF_WIDTH);
+        this.toolbarVBox = new VBox(Constants.VBOX_SPACING);
+        this.toolbarVBox.getChildren().addAll(lineButton,
+                circleButton, rectButton, textButton, textArea);
+        this.toolbarVBox.setPadding(new Insets(Constants.VBOX_PADDING));
+        this.toolbarVBox.setStyle(Constants.DRAW_TOOLS_BACKGROUND_COLOR);
+        this.toolbarVBox.setPrefWidth(Constants.VBOX_PREF_WIDTH);
 
-        return vBox;
+        return this.toolbarVBox;
     }
 
     /**
@@ -384,6 +408,11 @@ public class WhiteboardClient extends Application implements ScenceCallback {
      */
     @Override
     public void onConnectionStatusChanged(boolean isConnected) {
+        Platform.runLater(() -> {
+            this.toolbarVBox.setDisable(!isConnected);
+            this.canvas.setDisable(!isConnected);
+        });
+
         if (isConnected) {
             UserInformation instance = UserInformation.getInstance();
             JSONObject request = RequestBuilder
@@ -391,6 +420,34 @@ public class WhiteboardClient extends Application implements ScenceCallback {
                             instance.isManager());
 
             SocketHandler.getInstance().send(request);
+        }
+    }
+
+    /**
+     * On handshake establishment changed.
+     *
+     * @param isOkAck the is ok ack
+     */
+    @Override
+    public void onHandshakeEstablishmentChanged(boolean isOkAck) {
+        if (!isOkAck) {
+            ButtonType joinType = new ButtonType(
+                    Constants.JOIN_BUTTON_TYPE_NAME);
+            ButtonType closeType = new ButtonType(
+                    Constants.CLOSE_BUTTON_TYPE_NAME);
+
+            Platform.runLater(() -> {
+                Optional<ButtonType> result = AlertHelper.showConfirmation(
+                        this.owner, "Confirmation",
+                        "There is already a user with the manager role. "
+                                + "Do you want to join the shared whiteboard or close the application?",
+                        joinType, closeType);
+
+                if (result.get() == closeType) {
+                    Platform.exit();
+                }
+            });
+
         }
     }
 

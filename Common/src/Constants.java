@@ -102,11 +102,26 @@ public class Constants {
     /** The Constant PNG_FILE_FILTER. */
     public static final String PNG_FILE_FILTER = "*.png";
 
+    /** The Constant JOIN_BUTTON_TYPE_NAME. */
+    public static final String JOIN_BUTTON_TYPE_NAME = "Join";
+
+    /** The Constant CLOSE_BUTTON_TYPE_NAME. */
+    public static final String CLOSE_BUTTON_TYPE_NAME = "Close";
+
+    /** The Constant ACK_OK. */
+    public static final String ACK_OK = "OK";
+
+    /** The Constant ACK_NG. */
+    public static final String ACK_NG = "NG";
+
     /** The Constant PING_REQUEST. */
     public static final String PING_REQUEST = "ping";
 
     /** The Constant HANDSHAKE_ESTABLISHMENT_REQUEST. */
     public static final String HANDSHAKE_ESTABLISHMENT_REQUEST = "handshake_establishment";
+
+    /** The Constant HANDSHAKE_ACKNOWLEDGMENT. */
+    public static final String HANDSHAKE_ACKNOWLEDGMENT = "handshake_ack";
 
     /** The Constant CLIENT_SHUTDOWN_REQUEST. */
     public static final String CLIENT_SHUTDOWN_REQUEST = "client_shutdown";
@@ -116,4 +131,7 @@ public class Constants {
 
     /** The Constant MANAGER_ROLE_ATTR. */
     public static final String MANAGER_ROLE_ATTR = "has_manager_role";
+
+    /** The Constant ACK_ATTR. */
+    public static final String ACK_ATTR = "ack";
 }

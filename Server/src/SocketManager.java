@@ -9,6 +9,9 @@ public class SocketManager {
     /** The instance. */
     private static SocketManager INSTANCE;
 
+    /** The manager role connection. */
+    private SocketConnection managerRoleConnection;
+
     /** The connection map. */
     private Map<String, SocketConnection> connectionMap;
 
@@ -40,7 +43,7 @@ public class SocketManager {
      *
      * @param connection the connection
      */
-    public void put(SocketConnection connection) {
+    public synchronized void put(SocketConnection connection) {
         this.connectionMap.put(connection.getIdentifier(), connection);
     }
 
@@ -50,7 +53,7 @@ public class SocketManager {
      * @param identifier the identifier
      * @return the socket connection
      */
-    public SocketConnection get(String identifier) {
+    public synchronized SocketConnection get(String identifier) {
         SocketConnection connection = null;
 
         if (!StringHelper.isNullOrEmpty(identifier)) {
@@ -58,6 +61,43 @@ public class SocketManager {
         }
 
         return connection;
+    }
+
+    /**
+     * Any users with manager role.
+     *
+     * @return the socket connection
+     */
+    public synchronized SocketConnection anyUsersWithManagerRole() {
+        SocketConnection result = null;
+
+        for (SocketConnection connection : this.connectionMap.values()) {
+            if (connection.isManager()) {
+                result = connection;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Gets the manager role connection.
+     *
+     * @return the manager role connection
+     */
+    public SocketConnection getManagerRoleConnection() {
+        return this.managerRoleConnection;
+    }
+
+    /**
+     * Sets the manager role connection.
+     *
+     * @param managerRoleConnection the new manager role connection
+     */
+    public synchronized void setManagerRoleConnection(
+            SocketConnection managerRoleConnection) {
+        this.managerRoleConnection = managerRoleConnection;
     }
 
 }

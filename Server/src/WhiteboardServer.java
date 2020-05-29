@@ -92,7 +92,18 @@ public class WhiteboardServer extends Application implements ScenceCallback {
      */
     @Override
     public void onConnectionStatusChanged(boolean isConnected) {
-        // TODO Auto-generated method stub
+        // Do nothing here
+
+    }
+
+    /**
+     * On handshake establishment changed.
+     *
+     * @param isOkAck the is ok ack
+     */
+    @Override
+    public void onHandshakeEstablishmentChanged(boolean isOkAck) {
+        // Do nothing here
 
     }
 
@@ -204,5 +215,4 @@ public class WhiteboardServer extends Application implements ScenceCallback {
     private void showSocketPort(int port) {
         this.portField.setText(Integer.toString(port));
     }
-
 }

@@ -66,4 +66,15 @@ public class ChangeNotifier {
         }
     }
 
+    /**
+     * On handshake establishment changed.
+     *
+     * @param isOkAck the is ok ack
+     */
+    public void onHandshakeEstablishmentChanged(boolean isOkAck) {
+        if (this.sceneCallback != null) {
+            this.sceneCallback.onHandshakeEstablishmentChanged(isOkAck);
+        }
+    }
+
 }

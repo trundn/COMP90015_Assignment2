@@ -19,7 +19,17 @@ public class RetrieveMsgJob extends AbstractJob {
             JSONObject response = SocketHandler.getInstance().receive();
 
             if (response != null) {
-                
+                if (response.containsKey(Constants.HANDSHAKE_ACKNOWLEDGMENT)) {
+                    JSONObject content = (JSONObject) response
+                            .get(Constants.HANDSHAKE_ACKNOWLEDGMENT);
+                    String acknowledgment = content.get(Constants.ACK_ATTR)
+                            .toString();
+
+                    if (!Constants.ACK_OK.equalsIgnoreCase(acknowledgment)) {
+                        ChangeNotifier.getInstance()
+                                .onHandshakeEstablishmentChanged(false);
+                    }
+                }
             }
         }
 
