@@ -153,6 +153,9 @@ public class WhiteboardClient extends Application implements ScenceCallback {
         // Set the Title of the Stage
         stage.setTitle("Whiteboard Client");
 
+        // Disable maximum button
+        stage.setResizable(false);
+
         // Display the Stage
         stage.show();
     }

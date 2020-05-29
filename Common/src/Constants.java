@@ -111,6 +111,6 @@ public class Constants {
     /** The Constant USER_NAME_ATTR. */
     public static final String USER_NAME_ATTR = "user_name";
 
-    /** The Constant WHITEBOARD_OPERATION. */
-    public static final String WHITEBOARD_OPERATION = "whiteboard_opertion";
+    /** The Constant MANAGER_ROLE_ATTR. */
+    public static final String MANAGER_ROLE_ATTR = "has_manager_role";
 }

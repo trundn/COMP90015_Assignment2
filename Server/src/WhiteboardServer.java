@@ -104,6 +104,7 @@ public class WhiteboardServer extends Application implements ScenceCallback {
      */
     @Override
     public void start(Stage stage) throws Exception {
+        // Create IpAddress label
         Label addressLabel = new Label();
         addressLabel.setText("IP Address");
         addressLabel.setLayoutX(14);
@@ -111,12 +112,14 @@ public class WhiteboardServer extends Application implements ScenceCallback {
         addressLabel.setPrefWidth(63);
         addressLabel.setPrefHeight(18);
 
+        // Create IpAddress text field
         this.ipAddressField = new TextField();
         this.ipAddressField.setLayoutX(77);
         this.ipAddressField.setLayoutY(11);
         this.ipAddressField.setPrefWidth(160);
         this.ipAddressField.setPrefHeight(9);
 
+        // Create port label
         Label portLabel = new Label();
         portLabel.setText("Port");
         portLabel.setLayoutX(255);
@@ -124,21 +127,26 @@ public class WhiteboardServer extends Application implements ScenceCallback {
         portLabel.setPrefWidth(38);
         portLabel.setPrefHeight(18);
 
+        // Create port text field
         this.portField = new TextField();
         this.portField.setLayoutX(286);
         this.portField.setLayoutY(11);
         this.portField.setPrefWidth(160);
         this.portField.setPrefHeight(9);
 
+        // Create application log text area
         this.appLogArea = new TextArea();
         this.appLogArea.setLayoutX(14);
         this.appLogArea.setLayoutY(73);
         this.appLogArea.setPrefWidth(610);
         this.appLogArea.setPrefHeight(313);
+        this.appLogArea.setWrapText(true);
 
+        // Create VBox
         VBox vbox = new VBox();
         vbox.setPrefSize(640, 400);
 
+        // Create anchor pane
         AnchorPane pane = new AnchorPane();
         pane.getChildren().add(addressLabel);
         pane.getChildren().add(this.ipAddressField);
@@ -146,6 +154,7 @@ public class WhiteboardServer extends Application implements ScenceCallback {
         pane.getChildren().add(this.portField);
         pane.getChildren().add(this.appLogArea);
 
+        // Create scene
         vbox.getChildren().add(pane);
         Scene scene = new Scene(vbox);
 
@@ -157,6 +166,9 @@ public class WhiteboardServer extends Application implements ScenceCallback {
 
         // Do initialization
         this.initialize();
+
+        // Disable maximum button
+        stage.setResizable(false);
 
         // Display the Stage
         stage.show();

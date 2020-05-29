@@ -46,7 +46,7 @@ public class RequestBuilder {
 
         JSONObject content = new JSONObject();
         content.put(Constants.USER_NAME_ATTR, userName);
-        content.put(Constants.USER_NAME_ATTR, isManager);
+        content.put(Constants.MANAGER_ROLE_ATTR, isManager);
 
         request.put(Constants.ESTABLISH_CONNECTION, content);
 
