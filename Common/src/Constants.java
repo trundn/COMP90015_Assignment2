@@ -101,4 +101,7 @@ public class Constants {
 
     /** The Constant PNG_FILE_FILTER. */
     public static final String PNG_FILE_FILTER = "*.png";
+    
+    /** The Constant PING_OPERATION. */
+    public static final String PING_OPERATION = "ping";
 }

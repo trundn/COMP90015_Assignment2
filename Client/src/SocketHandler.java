@@ -23,9 +23,6 @@ public class SocketHandler {
     /** The host address. */
     private String hostAddress;
 
-    /** The user name. */
-    private String userName;
-
     /** The socket. */
     private Socket socket;
 
@@ -106,21 +103,18 @@ public class SocketHandler {
     }
 
     /**
-     * Gets the user name.
+     * Gets the local address.
      *
-     * @return the user name
+     * @return the local address
      */
-    public String getUserName() {
-        return userName;
-    }
+    public String getLocalAddress() {
+        String result = "";
 
-    /**
-     * Sets the user name.
-     *
-     * @param userName the new user name
-     */
-    public void setUserName(String userName) {
-        this.userName = userName;
+        if (this.socket != null) {
+            result = this.socket.getLocalAddress().getHostAddress();
+        }
+
+        return result;
     }
 
     /**

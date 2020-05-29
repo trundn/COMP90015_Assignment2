@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
 import javafx.application.Application;
@@ -32,23 +34,46 @@ public class WhiteboardClient extends Application {
     /** The main canvas. */
     private CanvasEx canvas;
 
+    /** The ping job. */
+    private PingJob pingJob;
+
+    /** The try connect job. */
+    private TryConnectJob tryConnectJob;
+
+    /** The retrieve message job. */
+    private RetrieveMsgJob retrieveMsgJob;
+
+    /** The job executor. */
+    private ThreadPoolJobExecutor jobExecutor;
+
     /**
      * The main method.
      *
      * @param args the arguments
      */
     public static void main(String[] args) {
-        if (args.length < 3) {
+        if (args.length < 4) {
             System.out.println(
                     "The host address, port, and username should be specified in command line arguments.");
-        } else if (args.length > 3) {
+        } else if (args.length > 4) {
             System.out.println(
                     "The number of command line arguments is invalid.");
         } else {
             try {
-                String hostAddress = args[0];
-                int port = Integer.parseInt(args[1]);
-                String userName = args[2];
+                WhiteboardOperation operatioEnum = null;
+
+                String operation = args[0];
+                String hostAddress = args[1];
+                int port = Integer.parseInt(args[2]);
+                String userName = args[3];
+
+                if (StringHelper.isNullOrEmpty(operation)) {
+                    throw new IllegalArgumentException(
+                            "Invalid whiteboard operation: It must not be NULL or empty.");
+                } else {
+                    operatioEnum = Enum.valueOf(WhiteboardOperation.class,
+                            operation.toUpperCase());
+                }
 
                 if (port < Constants.MIN_PORT_NUMBER
                         || port > Constants.MAX_PORT_NUMBER) {
@@ -77,14 +102,16 @@ public class WhiteboardClient extends Application {
                 SocketHandler handler = SocketHandler.getInstance();
                 handler.setPort(port);
                 handler.setHostAddress(hostAddress);
-                handler.setUserName(userName);
+
+                UserInformation userInformation = UserInformation.getInstance();
+                userInformation.setUserName(userName);
+                userInformation.setOperation(operatioEnum);
 
                 Application.launch(args);
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
             }
         }
-
     }
 
     /**
@@ -94,6 +121,8 @@ public class WhiteboardClient extends Application {
      */
     @Override
     public void start(Stage stage) {
+        this.initialize();
+
         // Create menu bar and tool bar
         MenuBar menuBar = createMenuBar(stage);
         VBox toolBar = createToolbar();
@@ -122,6 +151,42 @@ public class WhiteboardClient extends Application {
 
         // Display the Stage
         stage.show();
+    }
+
+    @Override
+    public void stop() {
+        try {
+            // Send shutdown notification to server.
+            SocketHandler.getInstance().notifyShutDown();
+
+            this.jobExecutor.terminate();
+            this.jobExecutor
+                    .waitForTermination(Duration.ofSeconds(5).toMillis());
+
+            // Clean up resources.
+            SocketHandler.getInstance().cleanUp();
+        } catch (TimeoutException e) {
+            this.jobExecutor.forceInterrupt();
+        }
+    }
+
+    /**
+     * Initialize.
+     */
+    private void initialize() {
+        // Instantiate needed jobs.
+        this.pingJob = new PingJob();
+        this.tryConnectJob = new TryConnectJob();
+        this.retrieveMsgJob = new RetrieveMsgJob();
+
+        try {
+            this.jobExecutor = new ThreadPoolJobExecutor(-1, 3, 3);
+            this.jobExecutor.queue(this.pingJob);
+            this.jobExecutor.queue(this.tryConnectJob);
+            this.jobExecutor.queue(this.retrieveMsgJob);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
