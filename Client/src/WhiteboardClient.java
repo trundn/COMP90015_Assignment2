@@ -384,11 +384,14 @@ public class WhiteboardClient extends Application implements ScenceCallback {
      */
     @Override
     public void onConnectionStatusChanged(boolean isConnected) {
-        UserInformation instance = UserInformation.getInstance();
-        JSONObject request = RequestBuilder.buildConnectionEstablishmentRequest(
-                instance.getUserName(), instance.isManager());
+        if (isConnected) {
+            UserInformation instance = UserInformation.getInstance();
+            JSONObject request = RequestBuilder
+                    .buildHandshakeEstablishmentRequest(instance.getUserName(),
+                            instance.isManager());
 
-        SocketHandler.getInstance().send(request);
+            SocketHandler.getInstance().send(request);
+        }
     }
 
 }

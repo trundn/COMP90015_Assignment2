@@ -13,6 +13,12 @@ public class SocketConnection {
     /** The identifier. */
     private String identifier;
 
+    /** The user name. */
+    private String userName;
+
+    /** The is manager. */
+    private boolean isManager;
+
     /** The client socket. */
     private Socket clientSocket;
 
@@ -64,6 +70,57 @@ public class SocketConnection {
         }
 
         return address;
+    }
+
+    /**
+     * Gets the local address.
+     *
+     * @return the local address
+     */
+    public String getLocalAddress() {
+        String result = "";
+
+        if (this.clientSocket != null) {
+            result = this.clientSocket.getLocalAddress().getHostAddress();
+        }
+
+        return result;
+    }
+
+    /**
+     * Gets the user name.
+     *
+     * @return the user name
+     */
+    public String getUserName() {
+        return userName;
+    }
+
+    /**
+     * Sets the user name.
+     *
+     * @param userName the new user name
+     */
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    /**
+     * Checks if is manager.
+     *
+     * @return true, if is manager
+     */
+    public boolean isManager() {
+        return isManager;
+    }
+
+    /**
+     * Sets the manager.
+     *
+     * @param isManager the new manager
+     */
+    public void setManager(boolean isManager) {
+        this.isManager = isManager;
     }
 
     /**

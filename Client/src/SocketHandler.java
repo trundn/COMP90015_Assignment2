@@ -235,8 +235,10 @@ public class SocketHandler {
      */
     public void notifyShutDown() {
         // Send shutdown notification to server.
-        JSONObject request = RequestBuilder
-                .buildShutDownRequest(this.getHostAddress());
+        JSONObject request = RequestBuilder.buildShutDownRequest(
+                this.getLocalAddress(),
+                UserInformation.getInstance().getUserName(),
+                UserInformation.getInstance().isManager());
         this.send(request);
     }
 }

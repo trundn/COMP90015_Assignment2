@@ -5,13 +5,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class TryConnectJob extends AbstractJob {
 
-    /** The default backoff time. */
+    /** The default back off time. */
     private long defaultBackoffTime = 1;
 
-    /** The minimum backoff time. */
+    /** The minimum back off time. */
     private long minimumBackoffTime = 1;
 
-    /** The maximum backoff time. */
+    /** The maximum back off time. */
     private long maximumBackoffTime = 32;
 
     /**
