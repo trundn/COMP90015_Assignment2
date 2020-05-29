@@ -6,6 +6,8 @@ import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
+import org.json.simple.JSONObject;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
@@ -379,8 +381,11 @@ public class WhiteboardClient extends Application implements ScenceCallback {
      */
     @Override
     public void onConnectionStatusChanged(boolean isConnected) {
-        // TODO Auto-generated method stub
+        UserInformation instance = UserInformation.getInstance();
+        JSONObject request = RequestBuilder.buildConnectionEstablishmentRequest(
+                instance.getUserName(), instance.isManager());
 
+        SocketHandler.getInstance().send(request);
     }
 
 }

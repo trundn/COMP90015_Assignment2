@@ -34,7 +34,10 @@ public class ClientHandlerJob extends AbstractJob {
         while (!this.isCancelled()) {
             JSONObject request = this.socketConnection.receive();
             if (request != null) {
-
+                System.out.println(String.format(
+                        "Received message from client [%s]. Content: %s",
+                        this.socketConnection.getHostAddress(),
+                        request.toJSONString()));
             }
         }
 

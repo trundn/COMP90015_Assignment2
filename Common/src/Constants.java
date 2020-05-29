@@ -101,7 +101,16 @@ public class Constants {
 
     /** The Constant PNG_FILE_FILTER. */
     public static final String PNG_FILE_FILTER = "*.png";
-    
+
     /** The Constant PING_OPERATION. */
     public static final String PING_OPERATION = "ping";
+
+    /** The Constant ESTABLISH_CONNECTION. */
+    public static final String ESTABLISH_CONNECTION = "establish_connection";
+
+    /** The Constant USER_NAME_ATTR. */
+    public static final String USER_NAME_ATTR = "user_name";
+
+    /** The Constant WHITEBOARD_OPERATION. */
+    public static final String WHITEBOARD_OPERATION = "whiteboard_opertion";
 }
