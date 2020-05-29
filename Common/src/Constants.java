@@ -126,6 +126,21 @@ public class Constants {
     /** The Constant CLIENT_SHUTDOWN_REQUEST. */
     public static final String CLIENT_SHUTDOWN_REQUEST = "client_shutdown";
 
+    /** The Constant LINE_SYN_REQUEST. */
+    public static final String LINE_SYN_REQUEST = "line_synchronization";
+
+    /** The Constant CIRCLE_SYN_REQUEST. */
+    public static final String CIRCLE_SYN_REQUEST = "circle_synchronization";
+
+    /** The Constant RECTANGLE_SYN_REQUEST. */
+    public static final String RECTANGLE_SYN_REQUEST = "rectangle_synchronization";
+    
+    /** The Constant TEXT_SYN_REQUEST. */
+    public static final String TEXT_SYN_REQUEST = "text_synchronization";
+    
+    /** The Constant HEADER_ATTR. */
+    public static final String HEADER_ATTR = "header";
+
     /** The Constant USER_NAME_ATTR. */
     public static final String USER_NAME_ATTR = "user_name";
 
@@ -134,4 +149,34 @@ public class Constants {
 
     /** The Constant ACK_ATTR. */
     public static final String ACK_ATTR = "ack";
+
+    /** The Constant START_X_ATTR. */
+    public static final String START_X_ATTR = "start_x";
+
+    /** The Constant START_Y_ATTR. */
+    public static final String START_Y_ATTR = "start_y";
+
+    /** The Constant END_X_ATTR. */
+    public static final String END_X_ATTR = "end_x";
+
+    /** The Constant END_Y_ATTR. */
+    public static final String END_Y_ATTR = "end_y";
+
+    /** The Constant CENTER_X_ATTR. */
+    public static final String CENTER_X_ATTR = "center_x";
+
+    /** The Constant CENTER_Y_ATTR. */
+    public static final String CENTER_Y_ATTR = "center_y";
+
+    /** The Constant RADIUS_ATTR. */
+    public static final String RADIUS_ATTR = "radius";
+
+    /** The Constant WIDTH_ATTR. */
+    public static final String WIDTH_ATTR = "width";
+
+    /** The Constant HEIGHT_ATTR. */
+    public static final String HEIGHT_ATTR = "height";
+    
+    /** The Constant TEXT_ATTR. */
+    public static final String TEXT_ATTR = "text";
 }

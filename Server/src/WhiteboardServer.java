@@ -1,6 +1,8 @@
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.json.simple.JSONObject;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -13,7 +15,7 @@ import javafx.stage.Stage;
 /**
  * The Class WhiteboardServer.
  */
-public class WhiteboardServer extends Application implements ScenceCallback {
+public class WhiteboardServer extends Application implements MessageCallback {
 
     /** The socket port. */
     private static int socketPort;
@@ -81,30 +83,10 @@ public class WhiteboardServer extends Application implements ScenceCallback {
      */
     @Override
     public void onMessageChanged(String newMessage) {
-        this.appLogArea.appendText(newMessage);
-        this.appLogArea.appendText(Constants.NEW_LINE);
-    }
-
-    /**
-     * On connection status changed.
-     *
-     * @param isConnected the is connected
-     */
-    @Override
-    public void onConnectionStatusChanged(boolean isConnected) {
-        // Do nothing here
-
-    }
-
-    /**
-     * On handshake establishment changed.
-     *
-     * @param isOkAck the is ok ack
-     */
-    @Override
-    public void onHandshakeEstablishmentChanged(boolean isOkAck) {
-        // Do nothing here
-
+        if (!StringHelper.isNullOrEmpty(newMessage)) {
+            this.appLogArea.appendText(newMessage);
+            this.appLogArea.appendText(Constants.NEW_LINE);
+        }
     }
 
     /**
@@ -189,7 +171,7 @@ public class WhiteboardServer extends Application implements ScenceCallback {
      * Initialize.
      */
     private void initialize() {
-        ChangeNotifier.getInstance().registerSceneCallback(this);
+        ChangeNotifier.getInstance().registerMsgCallback(this);
 
         this.showIpAddress();
         this.showSocketPort(WhiteboardServer.socketPort);
@@ -215,4 +197,5 @@ public class WhiteboardServer extends Application implements ScenceCallback {
     private void showSocketPort(int port) {
         this.portField.setText(Integer.toString(port));
     }
+
 }

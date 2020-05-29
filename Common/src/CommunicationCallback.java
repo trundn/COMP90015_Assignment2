@@ -1,16 +1,6 @@
+import org.json.simple.JSONObject;
 
-/**
- * The Interface ScenceCallback.
- */
-public interface ScenceCallback {
-
-    /**
-     * On message changed.
-     *
-     * @param newMessage the new message
-     */
-    void onMessageChanged(String newMessage);
-
+public interface CommunicationCallback {
     /**
      * On connection status changed.
      *
@@ -24,4 +14,11 @@ public interface ScenceCallback {
      * @param isOkAck the is ok ack
      */
     void onHandshakeEstablishmentChanged(boolean isOkAck);
+
+    /**
+     * On canvas synchronization changed.
+     *
+     * @param message the message
+     */
+    void onCanvasSynchronizationChanged(JSONObject message);
 }

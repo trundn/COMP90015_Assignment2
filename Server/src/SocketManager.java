@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,6 +80,27 @@ public class SocketManager {
         }
 
         return result;
+    }
+
+    /**
+     * Gets the socket connection list.
+     *
+     * @param exceptForUser the except for user
+     * @return the socket connection list
+     */
+    public ArrayList<SocketConnection> getSocketConnectionList(
+            String exceptForUser) {
+        ArrayList<SocketConnection> returnList = new ArrayList<SocketConnection>();
+
+        if (!StringHelper.isNullOrEmpty(exceptForUser)) {
+            for (SocketConnection connection : this.connectionMap.values()) {
+                if (!connection.getUserName().equalsIgnoreCase(exceptForUser)) {
+                    returnList.add(connection);
+                }
+            }
+        }
+
+        return returnList;
     }
 
     /**

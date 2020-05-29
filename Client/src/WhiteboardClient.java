@@ -23,7 +23,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
@@ -36,7 +35,8 @@ import javafx.stage.Window;
  * 
  * The Class WhiteboardClient.
  */
-public class WhiteboardClient extends Application implements ScenceCallback {
+public class WhiteboardClient extends Application
+        implements MessageCallback, CommunicationCallback {
 
     /** The owner. */
     private Window owner;
@@ -191,7 +191,8 @@ public class WhiteboardClient extends Application implements ScenceCallback {
      */
     private void initialize() {
         // Register call backs
-        ChangeNotifier.getInstance().registerSceneCallback(this);
+        ChangeNotifier.getInstance().registerMsgCallback(this);
+        ChangeNotifier.getInstance().registerCommCallback(this);
 
         // Instantiate needed jobs.
         this.pingJob = new PingJob();
@@ -291,8 +292,8 @@ public class WhiteboardClient extends Application implements ScenceCallback {
 
         // Build Tool bar VBox
         this.toolbarVBox = new VBox(Constants.VBOX_SPACING);
-        this.toolbarVBox.getChildren().addAll(lineButton,
-                circleButton, rectButton, textButton, textArea);
+        this.toolbarVBox.getChildren().addAll(lineButton, circleButton,
+                rectButton, textButton, textArea);
         this.toolbarVBox.setPadding(new Insets(Constants.VBOX_PADDING));
         this.toolbarVBox.setStyle(Constants.DRAW_TOOLS_BACKGROUND_COLOR);
         this.toolbarVBox.setPrefWidth(Constants.VBOX_PREF_WIDTH);
@@ -449,6 +450,110 @@ public class WhiteboardClient extends Application implements ScenceCallback {
             });
 
         }
+    }
+
+    /**
+     * On canvas synchronization changed.
+     *
+     * @param message the message
+     */
+    @Override
+    public void onCanvasSynchronizationChanged(JSONObject message) {
+        if (message != null) {
+            if (message.containsKey(Constants.LINE_SYN_REQUEST)) {
+                synchronizeLineToCanvas(message);
+            } else if (message.containsKey(Constants.CIRCLE_SYN_REQUEST)) {
+                synchronizeCircleToCanvas(message);
+            } else if (message.containsKey(Constants.RECTANGLE_SYN_REQUEST)) {
+                synchronizeRectangleToCanvas(message);
+            } else if (message.containsKey(Constants.TEXT_SYN_REQUEST)) {
+                synchronizeTextToCanvas(message);
+            }
+        }
+
+    }
+
+    /**
+     * Synchronize line to canvas.
+     *
+     * @param message the message
+     */
+    private void synchronizeLineToCanvas(JSONObject message) {
+        JSONObject content = (JSONObject) message
+                .get(Constants.LINE_SYN_REQUEST);
+        double startX = Double
+                .parseDouble(content.get(Constants.START_X_ATTR).toString());
+        double startY = Double
+                .parseDouble(content.get(Constants.START_Y_ATTR).toString());
+        double endX = Double
+                .parseDouble(content.get(Constants.END_X_ATTR).toString());
+        double endY = Double
+                .parseDouble(content.get(Constants.END_Y_ATTR).toString());
+
+        Platform.runLater(() -> {
+            this.canvas.drawLine(startX, startY, endX, endY);
+        });
+    }
+
+    /**
+     * Synchronize circle to canvas.
+     *
+     * @param message the message
+     */
+    private void synchronizeCircleToCanvas(JSONObject message) {
+        JSONObject content = (JSONObject) message
+                .get(Constants.CIRCLE_SYN_REQUEST);
+        double centerX = Double
+                .parseDouble(content.get(Constants.CENTER_X_ATTR).toString());
+        double centerY = Double
+                .parseDouble(content.get(Constants.CENTER_Y_ATTR).toString());
+        double radius = Double
+                .parseDouble(content.get(Constants.RADIUS_ATTR).toString());
+
+        Platform.runLater(() -> {
+            this.canvas.drawCircle(centerX, centerY, radius);
+        });
+    }
+
+    /**
+     * Synchronize rectangle to canvas.
+     *
+     * @param message the message
+     */
+    private void synchronizeRectangleToCanvas(JSONObject message) {
+        JSONObject content = (JSONObject) message
+                .get(Constants.RECTANGLE_SYN_REQUEST);
+        double startX = Double
+                .parseDouble(content.get(Constants.START_X_ATTR).toString());
+        double startY = Double
+                .parseDouble(content.get(Constants.START_Y_ATTR).toString());
+        double width = Double
+                .parseDouble(content.get(Constants.WIDTH_ATTR).toString());
+        double height = Double
+                .parseDouble(content.get(Constants.HEIGHT_ATTR).toString());
+
+        Platform.runLater(() -> {
+            this.canvas.drawRectangle(startX, startY, width, height);
+        });
+    }
+
+    /**
+     * Synchronize text to canvas.
+     *
+     * @param message the message
+     */
+    private void synchronizeTextToCanvas(JSONObject message) {
+        JSONObject content = (JSONObject) message
+                .get(Constants.TEXT_SYN_REQUEST);
+        double startX = Double
+                .parseDouble(content.get(Constants.START_X_ATTR).toString());
+        double startY = Double
+                .parseDouble(content.get(Constants.START_Y_ATTR).toString());
+        String text = content.get(Constants.TEXT_ATTR).toString();
+
+        Platform.runLater(() -> {
+            this.canvas.drawText(startX, startY, text);
+        });
     }
 
 }

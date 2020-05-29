@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import org.json.simple.JSONObject;
 
 /**
@@ -51,13 +52,34 @@ public class RequestProcessJob extends AbstractJob {
     @Override
     protected Void call() throws Exception {
         if (!this.isCancelled()) {
-            if (request
+            if (this.request
                     .containsKey(Constants.HANDSHAKE_ESTABLISHMENT_REQUEST)) {
-                handleHandshakeEstablishment(request);
+                this.handleHandshakeEstablishment();
+            } else if (this.request.containsKey(Constants.LINE_SYN_REQUEST)
+                    || this.request.containsKey(Constants.CIRCLE_SYN_REQUEST)
+                    || this.request.containsKey(Constants.RECTANGLE_SYN_REQUEST)
+                    || this.request.containsKey(Constants.TEXT_SYN_REQUEST)) {
+                this.handleCanvasSynchronization();
             }
         }
 
         return null;
+    }
+
+    /**
+     * Handle canvas synchronization.
+     */
+    private void handleCanvasSynchronization() {
+        JSONObject header = (JSONObject) this.request
+                .get(Constants.HEADER_ATTR);
+        String userName = header.get(Constants.USER_NAME_ATTR).toString();
+
+        ArrayList<SocketConnection> connectionList = SocketManager.getInstance()
+                .getSocketConnectionList(userName);
+
+        for (SocketConnection peerConnection : connectionList) {
+            peerConnection.send(this.request);
+        }
     }
 
     /**
@@ -66,9 +88,9 @@ public class RequestProcessJob extends AbstractJob {
      * @param request the request
      */
     @SuppressWarnings("unchecked")
-    private void handleHandshakeEstablishment(JSONObject request) {
+    private void handleHandshakeEstablishment() {
         JSONObject messageContent;
-        messageContent = (JSONObject) request
+        messageContent = (JSONObject) this.request
                 .get(Constants.HANDSHAKE_ESTABLISHMENT_REQUEST);
 
         // Extract user name and manager role values

@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import org.json.simple.JSONObject;
+
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -102,9 +104,9 @@ public class CanvasEx extends Canvas {
         try {
             WritableImage writableImage = new WritableImage(
                     Constants.CANVAS_WIDTH_INT, Constants.CANVAS_HEIGHT_INT);
-            
+
             this.snapshot(null, writableImage);
-            
+
             RenderedImage renderedImage = SwingFXUtils
                     .fromFXImage(writableImage, null);
             ImageIO.write(renderedImage, Constants.PNG_FILE_EXTENSION_LOWER,
@@ -119,6 +121,55 @@ public class CanvasEx extends Canvas {
      */
     public void clearGraphicsContext() {
         this.gc.clearRect(0, 0, this.getWidth(), this.getHeight());
+    }
+
+    /**
+     * Draw text.
+     *
+     * @param startX       the start X
+     * @param startY       the start Y
+     * @param expectedText the expected text
+     */
+    public void drawText(double startX, double startY, String expectedText) {
+        this.gc.fillText(expectedText, startX, startY);
+        this.gc.strokeText(expectedText, startX, startY);
+    }
+
+    /**
+     * Draw line.
+     *
+     * @param startX the start X
+     * @param startY the start Y
+     * @param endX   the end X
+     * @param endY   the end Y
+     */
+    public void drawLine(double startX, double startY, double endX,
+            double endY) {
+        this.gc.strokeLine(startX, startY, endX, endY);
+    }
+
+    /**
+     * Draw circle.
+     *
+     * @param centerX the center X
+     * @param centerY the center Y
+     * @param radius  the radius
+     */
+    public void drawCircle(double centerX, double centerY, double radius) {
+        this.gc.strokeOval(centerX, centerY, radius, radius);
+    }
+
+    /**
+     * Draw rectangle.
+     *
+     * @param startX the start X
+     * @param startY the start Y
+     * @param width  the width
+     * @param height the height
+     */
+    public void drawRectangle(double startX, double startY, double width,
+            double height) {
+        this.gc.strokeRect(startX, startY, width, height);
     }
 
     /**
@@ -142,6 +193,12 @@ public class CanvasEx extends Canvas {
             case TEXT:
                 this.gc.fillText(this.text, evt.getX(), evt.getY());
                 this.gc.strokeText(this.text, evt.getX(), evt.getY());
+
+                // Broadcast canvas changes to all peers
+                JSONObject request = RequestBuilder.buildTextSynRequest(
+                        UserInformation.getInstance().getUserName(), evt.getX(),
+                        evt.getY(), this.text);
+                SocketHandler.getInstance().send(request);
                 break;
             default:
                 // Do nothing here
@@ -154,12 +211,21 @@ public class CanvasEx extends Canvas {
      */
     private void registerMouseReleasedEvent() {
         this.setOnMouseReleased(evt -> {
+            JSONObject request = null;
+
             switch (this.drawToolType) {
             case LINE:
                 this.line.setEndX(evt.getX());
                 this.line.setEndY(evt.getY());
                 this.gc.strokeLine(this.line.getStartX(), this.line.getStartY(),
                         this.line.getEndX(), this.line.getEndY());
+
+                // Broadcast canvas changes to all peers
+                request = RequestBuilder.buildLineSynRequest(
+                        UserInformation.getInstance().getUserName(),
+                        this.line.getStartX(), this.line.getStartY(),
+                        this.line.getEndX(), this.line.getEndY());
+                SocketHandler.getInstance().send(request);
                 break;
             case CIRCLE:
                 this.circle.setRadius(
@@ -177,6 +243,13 @@ public class CanvasEx extends Canvas {
                 this.gc.strokeOval(this.circle.getCenterX(),
                         this.circle.getCenterY(), this.circle.getRadius(),
                         this.circle.getRadius());
+
+                // Broadcast canvas changes to all peers
+                request = RequestBuilder.buildCircleSynRequest(
+                        UserInformation.getInstance().getUserName(),
+                        this.circle.getCenterX(), this.circle.getCenterY(),
+                        this.circle.getRadius());
+                SocketHandler.getInstance().send(request);
                 break;
             case RECTANGLE:
                 this.rectangle.setWidth(
@@ -194,6 +267,13 @@ public class CanvasEx extends Canvas {
 
                 this.gc.strokeRect(this.rectangle.getX(), this.rectangle.getY(),
                         this.rectangle.getWidth(), this.rectangle.getHeight());
+
+                // Broadcast canvas changes to all peers
+                request = RequestBuilder.buildRectangleSynRequest(
+                        UserInformation.getInstance().getUserName(),
+                        this.rectangle.getX(), this.rectangle.getY(),
+                        this.rectangle.getWidth(), this.rectangle.getHeight());
+                SocketHandler.getInstance().send(request);
                 break;
             default:
                 // Do nothing here

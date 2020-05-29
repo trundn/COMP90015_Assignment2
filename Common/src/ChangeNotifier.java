@@ -1,3 +1,4 @@
+import org.json.simple.JSONObject;
 
 /**
  * The Class ChangeNotifier.
@@ -7,8 +8,11 @@ public class ChangeNotifier {
     /** The instance. */
     private static ChangeNotifier INSTANCE;
 
-    /** The scene callback. */
-    ScenceCallback sceneCallback;
+    /** The message callback. */
+    MessageCallback messageCallback;
+
+    /** The communication callback. */
+    CommunicationCallback communicationCallback;
 
     /**
      * Gets the single instance of MessageNotifier.
@@ -27,19 +31,35 @@ public class ChangeNotifier {
     }
 
     /**
-     * Register scene callback.
+     * Register message callback.
      *
      * @param callback the callback
      */
-    public void registerSceneCallback(ScenceCallback callback) {
-        this.sceneCallback = callback;
+    public void registerMsgCallback(MessageCallback callback) {
+        this.messageCallback = callback;
     }
 
     /**
-     * Unregister scene callback.
+     * Unregister message callback.
      */
-    public void unregisterSceneCallback() {
-        this.sceneCallback = null;
+    public void unregisterMsgCallback() {
+        this.messageCallback = null;
+    }
+
+    /**
+     * Register communication callback.
+     *
+     * @param callback the callback
+     */
+    public void registerCommCallback(CommunicationCallback callback) {
+        this.communicationCallback = callback;
+    }
+
+    /**
+     * Unregister communication callback.
+     */
+    public void unregisterCommCallback() {
+        this.communicationCallback = null;
     }
 
     /**
@@ -50,8 +70,8 @@ public class ChangeNotifier {
     public void onMessageChanged(String newMessage) {
         System.out.println(newMessage);
 
-        if (this.sceneCallback != null) {
-            this.sceneCallback.onMessageChanged(newMessage);
+        if (this.messageCallback != null) {
+            this.messageCallback.onMessageChanged(newMessage);
         }
     }
 
@@ -61,8 +81,8 @@ public class ChangeNotifier {
      * @param isConnected the is connected
      */
     public void onConnectionChanged(boolean isConnected) {
-        if (this.sceneCallback != null) {
-            this.sceneCallback.onConnectionStatusChanged(isConnected);
+        if (this.communicationCallback != null) {
+            this.communicationCallback.onConnectionStatusChanged(isConnected);
         }
     }
 
@@ -72,8 +92,19 @@ public class ChangeNotifier {
      * @param isOkAck the is ok ack
      */
     public void onHandshakeEstablishmentChanged(boolean isOkAck) {
-        if (this.sceneCallback != null) {
-            this.sceneCallback.onHandshakeEstablishmentChanged(isOkAck);
+        if (this.communicationCallback != null) {
+            this.communicationCallback.onHandshakeEstablishmentChanged(isOkAck);
+        }
+    }
+
+    /**
+     * On canvas synchronization changed.
+     *
+     * @param messageRcv the message rcv
+     */
+    public void onCanvasSynchronizationChanged(JSONObject messageRcv) {
+        if (this.communicationCallback != null) {
+            this.communicationCallback.onCanvasSynchronizationChanged(messageRcv);
         }
     }
 
