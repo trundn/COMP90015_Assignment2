@@ -306,11 +306,8 @@ public class CanvasEx extends Canvas {
                 this.line.setEndX(evt.getX());
                 this.line.setEndY(evt.getY());
 
-                synchronized (this.lock) {
-                    this.gc.strokeLine(this.line.getStartX(),
-                            this.line.getStartY(), this.line.getEndX(),
-                            this.line.getEndY());
-                }
+                this.drawLine(this.line.getStartX(), this.line.getStartY(),
+                        this.line.getEndX(), this.line.getEndY());
 
                 // Broadcast canvas changes to all peers
                 request = EventMessageBuilder.buildLineSynMessage(
@@ -332,11 +329,8 @@ public class CanvasEx extends Canvas {
                     this.circle.setCenterY(evt.getY());
                 }
 
-                synchronized (this.lock) {
-                    this.gc.strokeOval(this.circle.getCenterX(),
-                            this.circle.getCenterY(), this.circle.getRadius(),
-                            this.circle.getRadius());
-                }
+                this.drawCircle(this.circle.getCenterX(),
+                        this.circle.getCenterY(), this.circle.getRadius());
 
                 // Broadcast canvas changes to all peers
                 request = EventMessageBuilder.buildCircleSynMessage(
@@ -359,11 +353,8 @@ public class CanvasEx extends Canvas {
                     this.rectangle.setY(evt.getY());
                 }
 
-                synchronized (this.lock) {
-                    this.gc.strokeRect(this.rectangle.getX(),
-                            this.rectangle.getY(), this.rectangle.getWidth(),
-                            this.rectangle.getHeight());
-                }
+                this.drawRectangle(this.rectangle.getX(), this.rectangle.getY(),
+                        this.rectangle.getWidth(), this.rectangle.getHeight());
 
                 // Broadcast canvas changes to all peers
                 request = EventMessageBuilder.buildRectangleSynMessage(
