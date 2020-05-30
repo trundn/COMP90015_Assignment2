@@ -24,7 +24,7 @@ public class RetrieveMsgJob extends AbstractJob {
                 if (Constants.HANDSHAKE_ACKNOWLEDGMENT_EVT_NAME
                         .equalsIgnoreCase(eventName)) {
                     String acknowledgment = EventMessageParser
-                            .extractValueFromMessage(message,
+                            .extractValFromMessage(message,
                                     Constants.ACK_ATTR);
 
                     if (!Constants.ACK_OK.equalsIgnoreCase(acknowledgment)) {
@@ -50,7 +50,7 @@ public class RetrieveMsgJob extends AbstractJob {
                 } else if (Constants.WHITE_BOARD_SYS_ACKNOWLEDGMENT
                         .equalsIgnoreCase(eventName)) {
                     String imageAsString = EventMessageParser
-                            .extractValueFromMessage(message,
+                            .extractValFromMessage(message,
                                     Constants.IMAGE_AS_STRING_ATTR);
                     ChangeNotifier.getInstance()
                             .onWholeWhiteboardAcknowledgement(imageAsString);

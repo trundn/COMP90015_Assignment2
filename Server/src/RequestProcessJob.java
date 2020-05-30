@@ -110,7 +110,7 @@ public class RequestProcessJob extends AbstractJob {
                 .extractEventContent(this.message);
         String userName = EventMessageParser.extractUserName(this.message);
         boolean isManager = Boolean.parseBoolean(
-                EventMessageParser.extractValueFromContent(eventContent,
+                EventMessageParser.extractValFromContent(eventContent,
                         Constants.MANAGER_ROLE_ATTR));
 
         String acknowledgment = Constants.ACK_OK;

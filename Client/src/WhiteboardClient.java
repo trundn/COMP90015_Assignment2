@@ -517,14 +517,14 @@ public class WhiteboardClient extends Application
         JSONObject eventContent = EventMessageParser
                 .extractEventContent(message);
 
-        double startX = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.START_X_ATTR));
-        double startY = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.START_Y_ATTR));
-        double endX = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.END_X_ATTR));
-        double endY = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.END_Y_ATTR));
+        double startX = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.START_X_ATTR);
+        double startY = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.START_Y_ATTR);
+        double endX = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.END_X_ATTR);
+        double endY = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.END_Y_ATTR);
 
         Platform.runLater(() -> {
             this.canvas.drawLine(startX, startY, endX, endY);
@@ -540,14 +540,12 @@ public class WhiteboardClient extends Application
         JSONObject eventContent = EventMessageParser
                 .extractEventContent(message);
 
-        double centerX = Double.parseDouble(
-                EventMessageParser.extractValueFromContent(eventContent,
-                        Constants.CENTER_X_ATTR));
-        double centerY = Double.parseDouble(
-                EventMessageParser.extractValueFromContent(eventContent,
-                        Constants.CENTER_Y_ATTR));
-        double radius = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.RADIUS_ATTR));
+        double centerX = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.CENTER_X_ATTR);
+        double centerY = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.CENTER_Y_ATTR);
+        double radius = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.RADIUS_ATTR);
 
         Platform.runLater(() -> {
             this.canvas.drawCircle(centerX, centerY, radius);
@@ -563,14 +561,14 @@ public class WhiteboardClient extends Application
         JSONObject eventContent = EventMessageParser
                 .extractEventContent(message);
 
-        double startX = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.START_X_ATTR));
-        double startY = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.START_Y_ATTR));
-        double width = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.WIDTH_ATTR));
-        double height = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.HEIGHT_ATTR));
+        double startX = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.START_X_ATTR);
+        double startY = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.START_Y_ATTR);
+        double width = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.WIDTH_ATTR);
+        double height = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.HEIGHT_ATTR);
 
         Platform.runLater(() -> {
             this.canvas.drawRectangle(startX, startY, width, height);
@@ -586,11 +584,11 @@ public class WhiteboardClient extends Application
         JSONObject eventContent = EventMessageParser
                 .extractEventContent(message);
 
-        double startX = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.START_X_ATTR));
-        double startY = Double.parseDouble(EventMessageParser
-                .extractValueFromContent(eventContent, Constants.START_Y_ATTR));
-        String text = EventMessageParser.extractValueFromContent(eventContent,
+        double startX = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.START_X_ATTR);
+        double startY = EventMessageParser.extractDoubleValFromContent(
+                eventContent, Constants.START_Y_ATTR);
+        String text = EventMessageParser.extractValFromContent(eventContent,
                 Constants.TEXT_ATTR);
 
         Platform.runLater(() -> {
