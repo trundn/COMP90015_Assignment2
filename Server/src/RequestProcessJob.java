@@ -9,22 +9,22 @@ public class RequestProcessJob extends AbstractJob {
     /** The connection. */
     private SocketConnection connection;
 
-    /** The request. */
-    private JSONObject request;
+    /** The message. */
+    private JSONObject message;
 
     /**
      * Instantiates a new request process job.
      *
      * @param connection the connection
-     * @param request    the request
+     * @param message    the message
      */
-    public RequestProcessJob(SocketConnection connection, JSONObject request) {
-        if (request == null) {
+    public RequestProcessJob(SocketConnection connection, JSONObject message) {
+        if (message == null) {
             throw new IllegalArgumentException(
                     "The given request JSON object is NULL.");
         }
 
-        this.request = request;
+        this.message = message;
         this.connection = connection;
     }
 
@@ -52,14 +52,22 @@ public class RequestProcessJob extends AbstractJob {
     @Override
     protected Void call() throws Exception {
         if (!this.isCancelled()) {
-            if (this.request
-                    .containsKey(Constants.HANDSHAKE_ESTABLISHMENT_REQUEST)) {
+            String eventName = EventMessageParser
+                    .extractEventName(this.message);
+
+            if (Constants.HANDSHAKE_ESTABLISHMENT_EVT_NAME
+                    .equalsIgnoreCase(eventName)) {
                 this.handleHandshakeEstablishment();
-            } else if (this.request.containsKey(Constants.LINE_SYN_REQUEST)
-                    || this.request.containsKey(Constants.CIRCLE_SYN_REQUEST)
-                    || this.request.containsKey(Constants.RECTANGLE_SYN_REQUEST)
-                    || this.request.containsKey(Constants.TEXT_SYN_REQUEST)) {
-                this.handleCanvasSynchronization();
+            } else if (Constants.LINE_SYN_EVT_NAME.equalsIgnoreCase(eventName)
+                    || Constants.CIRCLE_SYN_EVT_NAME.equalsIgnoreCase(eventName)
+                    || Constants.RECTANGLE_SYN_EVT_NAME
+                            .equalsIgnoreCase(eventName)
+                    || Constants.TEXT_SYN_EVT_NAME
+                            .equalsIgnoreCase(eventName)) {
+                this.handleShapeSynchronization();
+            } else if (Constants.WHITE_BOARD_SYS_ACKNOWLEDGMENT
+                    .equalsIgnoreCase(eventName)) {
+                this.handleWhiteboardSynchronization();
             }
         }
 
@@ -69,17 +77,26 @@ public class RequestProcessJob extends AbstractJob {
     /**
      * Handle canvas synchronization.
      */
-    private void handleCanvasSynchronization() {
-        JSONObject header = (JSONObject) this.request
-                .get(Constants.HEADER_ATTR);
-        String userName = header.get(Constants.USER_NAME_ATTR).toString();
+    private void handleShapeSynchronization() {
+        String userName = EventMessageParser.extractUserName(this.message);
 
         ArrayList<SocketConnection> connectionList = SocketManager.getInstance()
-                .getSocketConnectionList(userName);
+                .getUserConnectionList(userName);
 
         for (SocketConnection peerConnection : connectionList) {
-            peerConnection.send(this.request);
+            peerConnection.send(this.message);
         }
+    }
+
+    /**
+     * Handle white board synchronization.
+     */
+    private void handleWhiteboardSynchronization() {
+        String userName = EventMessageParser.extractUserName(this.message);
+
+        SocketConnection connection = SocketManager.getInstance()
+                .getUserConnection(userName);
+        connection.send(this.message);
     }
 
     /**
@@ -87,17 +104,14 @@ public class RequestProcessJob extends AbstractJob {
      *
      * @param request the request
      */
-    @SuppressWarnings("unchecked")
     private void handleHandshakeEstablishment() {
-        JSONObject messageContent;
-        messageContent = (JSONObject) this.request
-                .get(Constants.HANDSHAKE_ESTABLISHMENT_REQUEST);
-
         // Extract user name and manager role values
-        String userName = messageContent.get(Constants.USER_NAME_ATTR)
-                .toString();
+        JSONObject eventContent = EventMessageParser
+                .extractEventContent(this.message);
+        String userName = EventMessageParser.extractUserName(this.message);
         boolean isManager = Boolean.parseBoolean(
-                messageContent.get(Constants.MANAGER_ROLE_ATTR).toString());
+                EventMessageParser.extractValueFromContent(eventContent,
+                        Constants.MANAGER_ROLE_ATTR));
 
         String acknowledgment = Constants.ACK_OK;
         if (isManager) {
@@ -109,7 +123,7 @@ public class RequestProcessJob extends AbstractJob {
                 acknowledgment = Constants.ACK_NG;
                 // Identify connection with manger role
                 SocketManager.getInstance()
-                        .setManagerRoleConnection(managerRoleConnection);
+                        .setManagerUserConnection(managerRoleConnection);
             }
         }
 
@@ -118,12 +132,18 @@ public class RequestProcessJob extends AbstractJob {
         this.connection.setManager(isManager);
 
         // Send response acknowledgement to client
-        JSONObject response = new JSONObject();
-        JSONObject reponseContent = new JSONObject();
+        this.sendResponse(EventMessageBuilder
+                .buildHandshakeEstablishmentAckMessage(acknowledgment));
 
-        reponseContent.put(Constants.ACK_ATTR, acknowledgment);
-        response.put(Constants.HANDSHAKE_ACKNOWLEDGMENT, reponseContent);
-        this.sendResponse(response);
+        // Request the lasted canvas from manager user
+        if (!isManager) {
+            SocketConnection manager = SocketManager.getInstance()
+                    .getManagerUserConnection();
+            if (manager != null) {
+                manager.send(EventMessageBuilder
+                        .buildWhiteboardSynMessage(userName));
+            }
+        }
     }
 
 }

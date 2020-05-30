@@ -114,35 +114,53 @@ public class Constants {
     /** The Constant ACK_NG. */
     public static final String ACK_NG = "NG";
 
-    /** The Constant PING_REQUEST. */
-    public static final String PING_REQUEST = "ping";
+    /** The Constant PING_EVT_NAME. */
+    public static final String PING_EVT_NAME = "ping";
 
-    /** The Constant HANDSHAKE_ESTABLISHMENT_REQUEST. */
-    public static final String HANDSHAKE_ESTABLISHMENT_REQUEST = "handshake_establishment";
+    /** The Constant HANDSHAKE_ESTABLISHMENT_EVT_NAME. */
+    public static final String HANDSHAKE_ESTABLISHMENT_EVT_NAME = "handshake_establishment";
 
-    /** The Constant HANDSHAKE_ACKNOWLEDGMENT. */
-    public static final String HANDSHAKE_ACKNOWLEDGMENT = "handshake_ack";
+    /** The Constant HANDSHAKE_ACKNOWLEDGMENT_EVT_NAME. */
+    public static final String HANDSHAKE_ACKNOWLEDGMENT_EVT_NAME = "handshake_ack";
 
-    /** The Constant CLIENT_SHUTDOWN_REQUEST. */
-    public static final String CLIENT_SHUTDOWN_REQUEST = "client_shutdown";
+    /** The Constant CLIENT_SHUTDOWN_EVT_NAME. */
+    public static final String CLIENT_SHUTDOWN_EVT_NAME = "client_shutdown_notification";
 
-    /** The Constant LINE_SYN_REQUEST. */
-    public static final String LINE_SYN_REQUEST = "line_synchronization";
+    /** The Constant WHITE_BOARD_SYS_EVT_NAME. */
+    public static final String WHITE_BOARD_SYS_EVT_NAME = "whiteboard_synchronization";
 
-    /** The Constant CIRCLE_SYN_REQUEST. */
-    public static final String CIRCLE_SYN_REQUEST = "circle_synchronization";
+    /** The Constant WHITE_BOARD_SYS_ACKNOWLEDGMENT. */
+    public static final String WHITE_BOARD_SYS_ACKNOWLEDGMENT = "whiteboard_synchronization_ack";
 
-    /** The Constant RECTANGLE_SYN_REQUEST. */
-    public static final String RECTANGLE_SYN_REQUEST = "rectangle_synchronization";
-    
-    /** The Constant TEXT_SYN_REQUEST. */
-    public static final String TEXT_SYN_REQUEST = "text_synchronization";
-    
-    /** The Constant HEADER_ATTR. */
-    public static final String HEADER_ATTR = "header";
+    /** The Constant LINE_SYN_EVT_NAME. */
+    public static final String LINE_SYN_EVT_NAME = "line_synchronization";
+
+    /** The Constant CIRCLE_SYN_EVT_NAME. */
+    public static final String CIRCLE_SYN_EVT_NAME = "circle_synchronization";
+
+    /** The Constant RECTANGLE_SYN_EVT_NAME. */
+    public static final String RECTANGLE_SYN_EVT_NAME = "rectangle_synchronization";
+
+    /** The Constant TEXT_SYN_EVT_NAME. */
+    public static final String TEXT_SYN_EVT_NAME = "text_synchronization";
+
+    /** The Constant MESSAGE_HEADER. */
+    public static final String MESSAGE_HEADER = "header";
+
+    /** The Constant MESSAGE_BODY. */
+    public static final String MESSAGE_BODY = "body";
+
+    /** The Constant MESSAGE_EVENT_NAME. */
+    public static final String MESSAGE_EVENT_NAME = "event_name";
+
+    /** The Constant MESSAE_EVENT_CONTENT. */
+    public static final String MESSAE_EVENT_CONTENT = "event_content";
 
     /** The Constant USER_NAME_ATTR. */
     public static final String USER_NAME_ATTR = "user_name";
+    
+    /** The Constant HOST_ADDRESS_ATTR. */
+    public static final String HOST_ADDRESS_ATTR = "host_address";
 
     /** The Constant MANAGER_ROLE_ATTR. */
     public static final String MANAGER_ROLE_ATTR = "has_manager_role";
@@ -176,7 +194,10 @@ public class Constants {
 
     /** The Constant HEIGHT_ATTR. */
     public static final String HEIGHT_ATTR = "height";
-    
+
     /** The Constant TEXT_ATTR. */
     public static final String TEXT_ATTR = "text";
+
+    /** The Constant IMAGE_AS_STRING_ATTR. */
+    public static final String IMAGE_AS_STRING_ATTR = "image_as_string";
 }

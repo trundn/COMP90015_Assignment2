@@ -17,13 +17,13 @@ public class PingJob extends AbstractJob {
     protected Void call() throws Exception {
         SocketHandler handler = SocketHandler.getInstance();
         while (!this.isCancelled()) {
-            JSONObject pingReq = RequestBuilder
-                    .buildPingRequest(handler.getLocalAddress());
+            JSONObject pingReq = EventMessageBuilder
+                    .buildPingMessage(handler.getLocalAddress());
             String error = handler.send(pingReq);
             if (!StringHelper.isNullOrEmpty(error)) {
                 handler.setConnected(false);
                 updateMessage("Failed to ping to server. Error: " + error);
-                ChangeNotifier.getInstance().onConnectionChanged(false);
+                ChangeNotifier.getInstance().onConnectionStatusChanged(false);
             }
 
             TimeUnit.SECONDS.sleep(3);

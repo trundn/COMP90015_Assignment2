@@ -1,8 +1,6 @@
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.json.simple.JSONObject;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;

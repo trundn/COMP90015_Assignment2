@@ -76,11 +76,11 @@ public class ChangeNotifier {
     }
 
     /**
-     * On connection changed.
+     * On connection status changed.
      *
      * @param isConnected the is connected
      */
-    public void onConnectionChanged(boolean isConnected) {
+    public void onConnectionStatusChanged(boolean isConnected) {
         if (this.communicationCallback != null) {
             this.communicationCallback.onConnectionStatusChanged(isConnected);
         }
@@ -98,13 +98,35 @@ public class ChangeNotifier {
     }
 
     /**
-     * On canvas synchronization changed.
+     * On shape synchronization changed.
      *
-     * @param messageRcv the message rcv
+     * @param message the message
      */
-    public void onCanvasSynchronizationChanged(JSONObject messageRcv) {
+    public void onShapeSynchronizationChanged(JSONObject message) {
         if (this.communicationCallback != null) {
-            this.communicationCallback.onCanvasSynchronizationChanged(messageRcv);
+            this.communicationCallback.onShapeSynchronizationChanged(message);
+        }
+    }
+
+    /**
+     * On whole white board requested.
+     *
+     * @param requestUserName the request user name
+     */
+    public void onWholeWhiteboardRequested(String requestUserName) {
+        if (this.communicationCallback != null) {
+            this.communicationCallback.onWholeWhiteboardRequested(requestUserName);
+        }
+    }
+
+    /**
+     * On whole white board acknowledgement.
+     *
+     * @param imageAsString the image as string
+     */
+    public void onWholeWhiteboardAcknowledgement(String imageAsString) {
+        if (this.communicationCallback != null) {
+            this.communicationCallback.onWholeWhiteboardAcknowledgement(imageAsString);
         }
     }
 

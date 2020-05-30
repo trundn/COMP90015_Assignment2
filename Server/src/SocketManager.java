@@ -10,8 +10,8 @@ public class SocketManager {
     /** The instance. */
     private static SocketManager INSTANCE;
 
-    /** The manager role connection. */
-    private SocketConnection managerRoleConnection;
+    /** The manager user connection. */
+    private SocketConnection managerUserConnection;
 
     /** The connection map. */
     private Map<String, SocketConnection> connectionMap;
@@ -83,12 +83,33 @@ public class SocketManager {
     }
 
     /**
-     * Gets the socket connection list.
+     * Gets the user connection.
+     *
+     * @param identifier the identifier
+     * @return the user connection
+     */
+    public synchronized SocketConnection getUserConnection(String userName) {
+        SocketConnection result = null;
+
+        if (!StringHelper.isNullOrEmpty(userName)) {
+            for (SocketConnection connection : this.connectionMap.values()) {
+                if (connection.getUserName().equalsIgnoreCase(userName)) {
+                    result = connection;
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Gets the user connection list.
      *
      * @param exceptForUser the except for user
-     * @return the socket connection list
+     * @return the user connection list
      */
-    public ArrayList<SocketConnection> getSocketConnectionList(
+    public ArrayList<SocketConnection> getUserConnectionList(
             String exceptForUser) {
         ArrayList<SocketConnection> returnList = new ArrayList<SocketConnection>();
 
@@ -104,12 +125,12 @@ public class SocketManager {
     }
 
     /**
-     * Gets the manager role connection.
+     * Gets the manager user connection.
      *
-     * @return the manager role connection
+     * @return the manager user connection
      */
-    public SocketConnection getManagerRoleConnection() {
-        return this.managerRoleConnection;
+    public SocketConnection getManagerUserConnection() {
+        return this.managerUserConnection;
     }
 
     /**
@@ -117,9 +138,9 @@ public class SocketManager {
      *
      * @param managerRoleConnection the new manager role connection
      */
-    public synchronized void setManagerRoleConnection(
+    public synchronized void setManagerUserConnection(
             SocketConnection managerRoleConnection) {
-        this.managerRoleConnection = managerRoleConnection;
+        this.managerUserConnection = managerRoleConnection;
     }
 
 }

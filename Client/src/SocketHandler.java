@@ -152,19 +152,23 @@ public class SocketHandler {
     /**
      * Send.
      *
-     * @param request the request
+     * @param message the message
      * @return the string
      */
-    public String send(JSONObject request) {
+    public String send(JSONObject message) {
         String error = "";
 
         if (this.outputStream != null) {
             try {
-                this.outputStream.writeObject(request);
-                System.out.println("Sent request to server. Content: "
-                        + request.toString());
+                this.outputStream.writeObject(message);
+                String eventName = EventMessageParser.extractEventName(message);
+
+                if (!Constants.PING_EVT_NAME.equalsIgnoreCase(eventName)) {
+                    System.out.println("Sent message to server. Content: "
+                            + message.toString());
+                }
             } catch (IOException ex) {
-                error = "Cannot send request to server. Error: "
+                error = "Cannot send message to server. Error: "
                         + ex.getMessage();
                 ex.printStackTrace();
             }
@@ -194,19 +198,23 @@ public class SocketHandler {
      * @return the JSON object
      */
     public JSONObject receive() {
-        JSONObject response = null;
+        JSONObject message = null;
 
         if (this.inputStream != null) {
             try {
-                response = (JSONObject) this.inputStream.readObject();
-                System.out.println(
-                        "Received response from server. Content: " + response);
+                message = (JSONObject) this.inputStream.readObject();
+                String eventName = EventMessageParser.extractEventName(message);
+
+                if (!Constants.PING_EVT_NAME.equalsIgnoreCase(eventName)) {
+                    System.out.println("Received message from server. Content: "
+                            + message);
+                }
             } catch (IOException | ClassNotFoundException ex) {
                 // Do nothing here.
             }
         }
 
-        return response;
+        return message;
     }
 
     /**
@@ -235,8 +243,7 @@ public class SocketHandler {
      */
     public void notifyShutDown() {
         // Send shutdown notification to server.
-        JSONObject request = RequestBuilder.buildShutDownRequest(
-                this.getLocalAddress(),
+        JSONObject request = EventMessageBuilder.buildShutDownMessage(
                 UserInformation.getInstance().getUserName(),
                 UserInformation.getInstance().isManager());
         this.send(request);

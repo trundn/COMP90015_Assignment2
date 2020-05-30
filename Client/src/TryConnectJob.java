@@ -50,7 +50,7 @@ public class TryConnectJob extends AbstractJob {
 
                 // Notify connection status changed
                 if (handler.isConnected()) {
-                    ChangeNotifier.getInstance().onConnectionChanged(true);
+                    ChangeNotifier.getInstance().onConnectionStatusChanged(true);
                 }
             }
         }

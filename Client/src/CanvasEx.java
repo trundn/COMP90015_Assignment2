@@ -1,6 +1,15 @@
+import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Base64;
+import java.util.Base64.Decoder;
+import java.util.Base64.Encoder;
 
 import javax.imageio.ImageIO;
 
@@ -38,6 +47,9 @@ public class CanvasEx extends Canvas {
 
     /** The draw tool type. */
     private DrawToolType drawToolType = DrawToolType.NONE;
+
+    /** The lock. */
+    private Object lock = new Object();
 
     /**
      * Instantiates a new canvas extension.
@@ -91,7 +103,40 @@ public class CanvasEx extends Canvas {
      */
     public void drawImage(Image img) {
         if (img != null) {
-            this.gc.drawImage(img, 0, 0);
+            synchronized (this.lock) {
+                this.gc.drawImage(img, 0, 0);
+            }
+        }
+    }
+
+    /**
+     * Draw image.
+     *
+     * @param imageAsString the image as string
+     */
+    public void drawImage(String imageAsString) {
+        Decoder decoder = Base64.getDecoder();
+        try {
+            byte[] byteArray = decoder.decode(imageAsString);
+            for (int i = 0; i < byteArray.length; ++i) {
+                if (byteArray[i] < 0) {
+                    byteArray[i] += 256;
+                }
+            }
+
+            OutputStream outputStream = new FileOutputStream(
+                    "synchronization.png");
+            outputStream.write(byteArray);
+            outputStream.flush();
+            outputStream.close();
+
+            InputStream inputStream = new ByteArrayInputStream(byteArray);
+            BufferedImage capture = ImageIO.read(inputStream);
+
+            Image image = SwingFXUtils.toFXImage(capture, null);
+            this.drawImage(image);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -112,15 +157,48 @@ public class CanvasEx extends Canvas {
             ImageIO.write(renderedImage, Constants.PNG_FILE_EXTENSION_LOWER,
                     file);
         } catch (IOException ex) {
-            System.out.println("Error!");
+            ex.printStackTrace();
         }
+    }
+
+    /**
+     * Gets the image as string.
+     *
+     * @return the image as string
+     */
+    public String getImageAsString() {
+        String result = "";
+
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            WritableImage writableImage = new WritableImage(
+                    Constants.CANVAS_WIDTH_INT, Constants.CANVAS_HEIGHT_INT);
+
+            this.snapshot(null, writableImage);
+
+            RenderedImage renderedImage = SwingFXUtils
+                    .fromFXImage(writableImage, null);
+            ImageIO.write(renderedImage, Constants.PNG_FILE_EXTENSION_LOWER,
+                    outputStream);
+
+            // Convert byte array to String
+            Encoder encoder = Base64.getEncoder();
+            result = encoder.encodeToString(outputStream.toByteArray());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return result;
     }
 
     /**
      * Clear graphics context.
      */
     public void clearGraphicsContext() {
-        this.gc.clearRect(0, 0, this.getWidth(), this.getHeight());
+        synchronized (this.lock) {
+            this.gc.clearRect(0, 0, this.getWidth(), this.getHeight());
+        }
     }
 
     /**
@@ -131,8 +209,10 @@ public class CanvasEx extends Canvas {
      * @param expectedText the expected text
      */
     public void drawText(double startX, double startY, String expectedText) {
-        this.gc.fillText(expectedText, startX, startY);
-        this.gc.strokeText(expectedText, startX, startY);
+        synchronized (this.lock) {
+            this.gc.fillText(expectedText, startX, startY);
+            this.gc.strokeText(expectedText, startX, startY);
+        }
     }
 
     /**
@@ -145,7 +225,9 @@ public class CanvasEx extends Canvas {
      */
     public void drawLine(double startX, double startY, double endX,
             double endY) {
-        this.gc.strokeLine(startX, startY, endX, endY);
+        synchronized (this.lock) {
+            this.gc.strokeLine(startX, startY, endX, endY);
+        }
     }
 
     /**
@@ -156,7 +238,9 @@ public class CanvasEx extends Canvas {
      * @param radius  the radius
      */
     public void drawCircle(double centerX, double centerY, double radius) {
-        this.gc.strokeOval(centerX, centerY, radius, radius);
+        synchronized (this.lock) {
+            this.gc.strokeOval(centerX, centerY, radius, radius);
+        }
     }
 
     /**
@@ -169,7 +253,9 @@ public class CanvasEx extends Canvas {
      */
     public void drawRectangle(double startX, double startY, double width,
             double height) {
-        this.gc.strokeRect(startX, startY, width, height);
+        synchronized (this.lock) {
+            this.gc.strokeRect(startX, startY, width, height);
+        }
     }
 
     /**
@@ -191,11 +277,13 @@ public class CanvasEx extends Canvas {
                 this.rectangle.setY(evt.getY());
                 break;
             case TEXT:
-                this.gc.fillText(this.text, evt.getX(), evt.getY());
-                this.gc.strokeText(this.text, evt.getX(), evt.getY());
+                synchronized (this.lock) {
+                    this.gc.fillText(this.text, evt.getX(), evt.getY());
+                    this.gc.strokeText(this.text, evt.getX(), evt.getY());
+                }
 
                 // Broadcast canvas changes to all peers
-                JSONObject request = RequestBuilder.buildTextSynRequest(
+                JSONObject request = EventMessageBuilder.buildTextSynMessage(
                         UserInformation.getInstance().getUserName(), evt.getX(),
                         evt.getY(), this.text);
                 SocketHandler.getInstance().send(request);
@@ -217,11 +305,15 @@ public class CanvasEx extends Canvas {
             case LINE:
                 this.line.setEndX(evt.getX());
                 this.line.setEndY(evt.getY());
-                this.gc.strokeLine(this.line.getStartX(), this.line.getStartY(),
-                        this.line.getEndX(), this.line.getEndY());
+
+                synchronized (this.lock) {
+                    this.gc.strokeLine(this.line.getStartX(),
+                            this.line.getStartY(), this.line.getEndX(),
+                            this.line.getEndY());
+                }
 
                 // Broadcast canvas changes to all peers
-                request = RequestBuilder.buildLineSynRequest(
+                request = EventMessageBuilder.buildLineSynMessage(
                         UserInformation.getInstance().getUserName(),
                         this.line.getStartX(), this.line.getStartY(),
                         this.line.getEndX(), this.line.getEndY());
@@ -240,12 +332,14 @@ public class CanvasEx extends Canvas {
                     this.circle.setCenterY(evt.getY());
                 }
 
-                this.gc.strokeOval(this.circle.getCenterX(),
-                        this.circle.getCenterY(), this.circle.getRadius(),
-                        this.circle.getRadius());
+                synchronized (this.lock) {
+                    this.gc.strokeOval(this.circle.getCenterX(),
+                            this.circle.getCenterY(), this.circle.getRadius(),
+                            this.circle.getRadius());
+                }
 
                 // Broadcast canvas changes to all peers
-                request = RequestBuilder.buildCircleSynRequest(
+                request = EventMessageBuilder.buildCircleSynMessage(
                         UserInformation.getInstance().getUserName(),
                         this.circle.getCenterX(), this.circle.getCenterY(),
                         this.circle.getRadius());
@@ -265,11 +359,14 @@ public class CanvasEx extends Canvas {
                     this.rectangle.setY(evt.getY());
                 }
 
-                this.gc.strokeRect(this.rectangle.getX(), this.rectangle.getY(),
-                        this.rectangle.getWidth(), this.rectangle.getHeight());
+                synchronized (this.lock) {
+                    this.gc.strokeRect(this.rectangle.getX(),
+                            this.rectangle.getY(), this.rectangle.getWidth(),
+                            this.rectangle.getHeight());
+                }
 
                 // Broadcast canvas changes to all peers
-                request = RequestBuilder.buildRectangleSynRequest(
+                request = EventMessageBuilder.buildRectangleSynMessage(
                         UserInformation.getInstance().getUserName(),
                         this.rectangle.getX(), this.rectangle.getY(),
                         this.rectangle.getWidth(), this.rectangle.getHeight());

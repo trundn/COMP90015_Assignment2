@@ -126,19 +126,23 @@ public class SocketConnection {
     /**
      * Send.
      *
-     * @param request the request
+     * @param message the message
      * @return the string
      */
-    public String send(JSONObject request) {
+    public String send(JSONObject message) {
         String error = "";
 
         if (this.outputStream != null) {
             try {
-                this.outputStream.writeObject(request);
-                System.out.println("Sent response to client. Content: "
-                        + request.toString());
+                this.outputStream.writeObject(message);
+                String eventName = EventMessageParser.extractEventName(message);
+
+                if (!Constants.PING_EVT_NAME.equalsIgnoreCase(eventName)) {
+                    System.out.println("Sent message to client. Content: "
+                            + message.toString());
+                }
             } catch (IOException ex) {
-                error = "Cannot send response to client. Error: "
+                error = "Cannot send message to client. Error: "
                         + ex.getMessage();
                 ex.printStackTrace();
             }
@@ -156,19 +160,23 @@ public class SocketConnection {
      * @return the JSON object
      */
     public JSONObject receive() {
-        JSONObject request = null;
+        JSONObject message = null;
 
         if (this.inputStream != null) {
             try {
-                request = (JSONObject) inputStream.readObject();
-                System.out.println(
-                        "Received request from client. Content: " + request);
+                message = (JSONObject) inputStream.readObject();
+                String eventName = EventMessageParser.extractEventName(message);
+
+                if (!Constants.PING_EVT_NAME.equalsIgnoreCase(eventName)) {
+                    System.out.println("Received message from client. Content: "
+                            + message);
+                }
             } catch (IOException | ClassNotFoundException ex) {
                 ex.printStackTrace();
             }
         }
 
-        return request;
+        return message;
     }
 
     /**

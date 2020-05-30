@@ -16,9 +16,23 @@ public interface CommunicationCallback {
     void onHandshakeEstablishmentChanged(boolean isOkAck);
 
     /**
-     * On canvas synchronization changed.
+     * On shape synchronization changed.
      *
      * @param message the message
      */
-    void onCanvasSynchronizationChanged(JSONObject message);
+    void onShapeSynchronizationChanged(JSONObject message);
+
+    /**
+     * On whole whiteboard requested.
+     *
+     * @param requestUserName the request user name
+     */
+    void onWholeWhiteboardRequested(String requestUserName);
+
+    /**
+     * On whole whiteboard acknowledgement.
+     *
+     * @param imageAsString the image as string
+     */
+    void onWholeWhiteboardAcknowledgement(String imageAsString);
 }

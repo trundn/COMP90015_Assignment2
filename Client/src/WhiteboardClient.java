@@ -41,7 +41,7 @@ public class WhiteboardClient extends Application
     /** The owner. */
     private Window owner;
 
-    /** The toolbar V box. */
+    /** The tool bar V box. */
     private VBox toolbarVBox;
 
     /** The main canvas. */
@@ -351,7 +351,7 @@ public class WhiteboardClient extends Application
                     Image img = new Image(io);
                     this.canvas.drawImage(img);
                 } catch (IOException ex) {
-                    System.out.println("Error!");
+                    ex.printStackTrace();
                 }
             }
         });
@@ -416,8 +416,8 @@ public class WhiteboardClient extends Application
 
         if (isConnected) {
             UserInformation instance = UserInformation.getInstance();
-            JSONObject request = RequestBuilder
-                    .buildHandshakeEstablishmentRequest(instance.getUserName(),
+            JSONObject request = EventMessageBuilder
+                    .buildHandshakeEstablishmentMessage(instance.getUserName(),
                             instance.isManager());
 
             SocketHandler.getInstance().send(request);
@@ -458,17 +458,52 @@ public class WhiteboardClient extends Application
      * @param message the message
      */
     @Override
-    public void onCanvasSynchronizationChanged(JSONObject message) {
+    public void onShapeSynchronizationChanged(JSONObject message) {
         if (message != null) {
-            if (message.containsKey(Constants.LINE_SYN_REQUEST)) {
+            String eventName = EventMessageParser.extractEventName(message);
+            if (Constants.LINE_SYN_EVT_NAME.equalsIgnoreCase(eventName)) {
                 synchronizeLineToCanvas(message);
-            } else if (message.containsKey(Constants.CIRCLE_SYN_REQUEST)) {
+            } else if (Constants.CIRCLE_SYN_EVT_NAME
+                    .equalsIgnoreCase(eventName)) {
                 synchronizeCircleToCanvas(message);
-            } else if (message.containsKey(Constants.RECTANGLE_SYN_REQUEST)) {
+            } else if (Constants.RECTANGLE_SYN_EVT_NAME
+                    .equalsIgnoreCase(eventName)) {
                 synchronizeRectangleToCanvas(message);
-            } else if (message.containsKey(Constants.TEXT_SYN_REQUEST)) {
+            } else if (Constants.TEXT_SYN_EVT_NAME
+                    .equalsIgnoreCase(eventName)) {
                 synchronizeTextToCanvas(message);
             }
+        }
+
+    }
+
+    /**
+     * On whole white board requested.
+     *
+     * @param userName the user name
+     */
+    @Override
+    public void onWholeWhiteboardRequested(String userName) {
+        Platform.runLater(() -> {
+            String imageAsString = this.canvas.getImageAsString();
+            JSONObject ack = EventMessageBuilder
+                    .buildWhiteboardSynAckMessage(userName, imageAsString);
+            SocketHandler.getInstance().send(ack);
+        });
+
+    }
+
+    /**
+     * On whole canvas acknowledgement.
+     *
+     * @param imageAsString the image as string
+     */
+    @Override
+    public void onWholeWhiteboardAcknowledgement(String imageAsString) {
+        if (!StringHelper.isNullOrEmpty(imageAsString)) {
+            Platform.runLater(() -> {
+                this.canvas.drawImage(imageAsString);
+            });
         }
 
     }
@@ -479,16 +514,17 @@ public class WhiteboardClient extends Application
      * @param message the message
      */
     private void synchronizeLineToCanvas(JSONObject message) {
-        JSONObject content = (JSONObject) message
-                .get(Constants.LINE_SYN_REQUEST);
-        double startX = Double
-                .parseDouble(content.get(Constants.START_X_ATTR).toString());
-        double startY = Double
-                .parseDouble(content.get(Constants.START_Y_ATTR).toString());
-        double endX = Double
-                .parseDouble(content.get(Constants.END_X_ATTR).toString());
-        double endY = Double
-                .parseDouble(content.get(Constants.END_Y_ATTR).toString());
+        JSONObject eventContent = EventMessageParser
+                .extractEventContent(message);
+
+        double startX = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.START_X_ATTR));
+        double startY = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.START_Y_ATTR));
+        double endX = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.END_X_ATTR));
+        double endY = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.END_Y_ATTR));
 
         Platform.runLater(() -> {
             this.canvas.drawLine(startX, startY, endX, endY);
@@ -501,14 +537,17 @@ public class WhiteboardClient extends Application
      * @param message the message
      */
     private void synchronizeCircleToCanvas(JSONObject message) {
-        JSONObject content = (JSONObject) message
-                .get(Constants.CIRCLE_SYN_REQUEST);
-        double centerX = Double
-                .parseDouble(content.get(Constants.CENTER_X_ATTR).toString());
-        double centerY = Double
-                .parseDouble(content.get(Constants.CENTER_Y_ATTR).toString());
-        double radius = Double
-                .parseDouble(content.get(Constants.RADIUS_ATTR).toString());
+        JSONObject eventContent = EventMessageParser
+                .extractEventContent(message);
+
+        double centerX = Double.parseDouble(
+                EventMessageParser.extractValueFromContent(eventContent,
+                        Constants.CENTER_X_ATTR));
+        double centerY = Double.parseDouble(
+                EventMessageParser.extractValueFromContent(eventContent,
+                        Constants.CENTER_Y_ATTR));
+        double radius = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.RADIUS_ATTR));
 
         Platform.runLater(() -> {
             this.canvas.drawCircle(centerX, centerY, radius);
@@ -521,16 +560,17 @@ public class WhiteboardClient extends Application
      * @param message the message
      */
     private void synchronizeRectangleToCanvas(JSONObject message) {
-        JSONObject content = (JSONObject) message
-                .get(Constants.RECTANGLE_SYN_REQUEST);
-        double startX = Double
-                .parseDouble(content.get(Constants.START_X_ATTR).toString());
-        double startY = Double
-                .parseDouble(content.get(Constants.START_Y_ATTR).toString());
-        double width = Double
-                .parseDouble(content.get(Constants.WIDTH_ATTR).toString());
-        double height = Double
-                .parseDouble(content.get(Constants.HEIGHT_ATTR).toString());
+        JSONObject eventContent = EventMessageParser
+                .extractEventContent(message);
+
+        double startX = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.START_X_ATTR));
+        double startY = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.START_Y_ATTR));
+        double width = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.WIDTH_ATTR));
+        double height = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.HEIGHT_ATTR));
 
         Platform.runLater(() -> {
             this.canvas.drawRectangle(startX, startY, width, height);
@@ -543,13 +583,15 @@ public class WhiteboardClient extends Application
      * @param message the message
      */
     private void synchronizeTextToCanvas(JSONObject message) {
-        JSONObject content = (JSONObject) message
-                .get(Constants.TEXT_SYN_REQUEST);
-        double startX = Double
-                .parseDouble(content.get(Constants.START_X_ATTR).toString());
-        double startY = Double
-                .parseDouble(content.get(Constants.START_Y_ATTR).toString());
-        String text = content.get(Constants.TEXT_ATTR).toString();
+        JSONObject eventContent = EventMessageParser
+                .extractEventContent(message);
+
+        double startX = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.START_X_ATTR));
+        double startY = Double.parseDouble(EventMessageParser
+                .extractValueFromContent(eventContent, Constants.START_Y_ATTR));
+        String text = EventMessageParser.extractValueFromContent(eventContent,
+                Constants.TEXT_ATTR);
 
         Platform.runLater(() -> {
             this.canvas.drawText(startX, startY, text);

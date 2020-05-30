@@ -19,22 +19,41 @@ public class RetrieveMsgJob extends AbstractJob {
             JSONObject message = SocketHandler.getInstance().receive();
 
             if (message != null) {
-                if (message.containsKey(Constants.HANDSHAKE_ACKNOWLEDGMENT)) {
-                    JSONObject content = (JSONObject) message
-                            .get(Constants.HANDSHAKE_ACKNOWLEDGMENT);
-                    String acknowledgment = content.get(Constants.ACK_ATTR)
-                            .toString();
+                String eventName = EventMessageParser.extractEventName(message);
+
+                if (Constants.HANDSHAKE_ACKNOWLEDGMENT_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    String acknowledgment = EventMessageParser
+                            .extractValueFromMessage(message,
+                                    Constants.ACK_ATTR);
 
                     if (!Constants.ACK_OK.equalsIgnoreCase(acknowledgment)) {
                         ChangeNotifier.getInstance()
                                 .onHandshakeEstablishmentChanged(false);
                     }
-                } else if (message.containsKey(Constants.LINE_SYN_REQUEST)
-                        || message.containsKey(Constants.CIRCLE_SYN_REQUEST)
-                        || message.containsKey(Constants.RECTANGLE_SYN_REQUEST)
-                        || message.containsKey(Constants.TEXT_SYN_REQUEST)) {
+                } else if (Constants.LINE_SYN_EVT_NAME
+                        .equalsIgnoreCase(eventName)
+                        || Constants.CIRCLE_SYN_EVT_NAME
+                                .equalsIgnoreCase(eventName)
+                        || Constants.RECTANGLE_SYN_EVT_NAME
+                                .equalsIgnoreCase(eventName)
+                        || Constants.TEXT_SYN_EVT_NAME
+                                .equalsIgnoreCase(eventName)) {
                     ChangeNotifier.getInstance()
-                            .onCanvasSynchronizationChanged(message);
+                            .onShapeSynchronizationChanged(message);
+                } else if (Constants.WHITE_BOARD_SYS_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    String userName = EventMessageParser
+                            .extractUserName(message);
+                    ChangeNotifier.getInstance()
+                            .onWholeWhiteboardRequested(userName);
+                } else if (Constants.WHITE_BOARD_SYS_ACKNOWLEDGMENT
+                        .equalsIgnoreCase(eventName)) {
+                    String imageAsString = EventMessageParser
+                            .extractValueFromMessage(message,
+                                    Constants.IMAGE_AS_STRING_ATTR);
+                    ChangeNotifier.getInstance()
+                            .onWholeWhiteboardAcknowledgement(imageAsString);
                 }
             }
         }

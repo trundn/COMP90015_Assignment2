@@ -32,16 +32,18 @@ public class ClientHandlerJob extends AbstractJob {
     @Override
     protected Void call() throws Exception {
         while (!this.isCancelled()) {
-            JSONObject request = this.socketConnection.receive();
-            if (request != null) {
-                if (!request.containsKey(Constants.PING_REQUEST)) {
+            JSONObject message = this.socketConnection.receive();
+            if (message != null) {
+                String eventName = EventMessageParser.extractEventName(message);
+
+                if (!Constants.PING_EVT_NAME.equalsIgnoreCase(eventName)) {
                     ChangeNotifier.getInstance().onMessageChanged(String.format(
                             "Received message from client [%s]. Content: %s",
                             this.socketConnection.getLocalAddress(),
-                            request.toJSONString()));
+                            message.toJSONString()));
                 }
 
-                if (request.containsKey(Constants.CLIENT_SHUTDOWN_REQUEST)) {
+                if (Constants.CLIENT_SHUTDOWN_EVT_NAME.equalsIgnoreCase(eventName)) {
                     ChangeNotifier.getInstance()
                             .onMessageChanged(String.format(
                                     "Client [%s] is shuting down.",
@@ -50,7 +52,7 @@ public class ClientHandlerJob extends AbstractJob {
                     this.socketConnection.cleanUp();
                 } else {
                     RequestProcessJob job = new RequestProcessJob(
-                            this.socketConnection, request);
+                            this.socketConnection, message);
                     this.requestProcessJobExecutor.queue(job);
                 }
             }
