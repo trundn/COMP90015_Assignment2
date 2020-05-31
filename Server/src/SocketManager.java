@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,6 +50,17 @@ public class SocketManager {
     }
 
     /**
+     * Removes the.
+     *
+     * @param identifier the identifier
+     */
+    public synchronized void remove(String identifier) {
+        if (!StringHelper.isNullOrEmpty(identifier)) {
+            this.connectionMap.remove(identifier);
+        }
+    }
+
+    /**
      * Gets the.
      *
      * @param identifier the identifier
@@ -65,11 +77,11 @@ public class SocketManager {
     }
 
     /**
-     * Any user own white board.
+     * Any user owning white board.
      *
      * @return the socket connection
      */
-    public synchronized SocketConnection anyUserOwnWhiteboard() {
+    public synchronized SocketConnection anyUserOwningWhiteboard() {
         SocketConnection result = null;
 
         for (SocketConnection connection : this.connectionMap.values()) {
@@ -93,7 +105,9 @@ public class SocketManager {
 
         if (!StringHelper.isNullOrEmpty(userName)) {
             for (SocketConnection connection : this.connectionMap.values()) {
-                if (connection.getUserName().equalsIgnoreCase(userName)) {
+                if (!StringHelper.isNullOrEmpty(connection.getUserName())
+                        && connection.getUserName()
+                                .equalsIgnoreCase(userName)) {
                     result = connection;
                     break;
                 }
@@ -101,6 +115,15 @@ public class SocketManager {
         }
 
         return result;
+    }
+
+    /**
+     * Gets the all user connection list.
+     *
+     * @return the all user connection list
+     */
+    public Collection<SocketConnection> getAllUserConnectionList() {
+        return this.connectionMap.values();
     }
 
     /**

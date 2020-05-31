@@ -243,7 +243,7 @@ public class SocketHandler {
      */
     public void notifyShutDown() {
         // Send shutdown notification to server.
-        JSONObject request = EventMessageBuilder.buildShutDownMessage(
+        JSONObject request = EventMessageBuilder.buildClientShutDownMessage(
                 UserInformation.getInstance().getUserName(),
                 UserInformation.getInstance().isManager());
         this.send(request);

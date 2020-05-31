@@ -23,6 +23,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
@@ -43,6 +44,9 @@ public class WhiteboardClient extends Application
 
     /** The tool bar V box. */
     private VBox toolbarVBox;
+
+    /** The main menu bar. */
+    private MenuBar mainMenuBar;
 
     /** The main canvas. */
     private CanvasEx canvas;
@@ -70,6 +74,9 @@ public class WhiteboardClient extends Application
 
     /** The job executor. */
     private ThreadPoolJobExecutor jobExecutor;
+
+    /** The keep save image path. */
+    private String keepSaveImagePath = "";
 
     /**
      * The main method.
@@ -150,20 +157,20 @@ public class WhiteboardClient extends Application
     public void start(Stage stage) {
         this.initialize();
 
-        // Create menu bar and tool bar
-        MenuBar menuBar = createMenuBar(stage);
-        VBox toolBar = createToolbar();
-
         // Create canvas extension
         this.canvas = new CanvasEx(Constants.CANVAS_WIDTH,
                 Constants.CANVAS_HEIGHT);
+
+        // Create menu bar and tool bar
+        this.mainMenuBar = createMenuBar(stage);
+        this.toolbarVBox = createToolbar();
 
         // Create the Border Pane
         BorderPane borderPane = new BorderPane();
 
         // Add the Menu bar, Tool bar, and Canvas to the Pane
-        borderPane.setTop(menuBar);
-        borderPane.setLeft(toolBar);
+        borderPane.setTop(this.mainMenuBar);
+        borderPane.setLeft(this.toolbarVBox);
         borderPane.setCenter(this.canvas);
 
         // Create the Scene
@@ -255,28 +262,36 @@ public class WhiteboardClient extends Application
         // Register action for Line toggle button
         this.lineButton.setOnAction(evt -> {
             if (lineButton.isSelected()) {
-                this.canvas.setDrawToolType(DrawToolType.LINE);
+                if (this.canvas != null) {
+                    this.canvas.setDrawToolType(DrawToolType.LINE);
+                }
             }
         });
 
         // Register action for Circle toggle button
         this.circleButton.setOnAction(evt -> {
             if (circleButton.isSelected()) {
-                this.canvas.setDrawToolType(DrawToolType.CIRCLE);
+                if (this.canvas != null) {
+                    this.canvas.setDrawToolType(DrawToolType.CIRCLE);
+                }
             }
         });
 
         // Register action for Rectangle toggle button
         this.rectButton.setOnAction(evt -> {
             if (rectButton.isSelected()) {
-                this.canvas.setDrawToolType(DrawToolType.RECTANGLE);
+                if (this.canvas != null) {
+                    this.canvas.setDrawToolType(DrawToolType.RECTANGLE);
+                }
             }
         });
 
         // Register action for Text toggle button
         this.textButton.setOnAction(evt -> {
             if (textButton.isSelected()) {
-                this.canvas.setDrawToolType(DrawToolType.TEXT);
+                if (this.canvas != null) {
+                    this.canvas.setDrawToolType(DrawToolType.TEXT);
+                }
             }
         });
 
@@ -287,18 +302,20 @@ public class WhiteboardClient extends Application
         // Register text changed event for Text Area
         textArea.textProperty()
                 .addListener((observable, oldValue, newValue) -> {
-                    this.canvas.notifyTextChanged(newValue);
+                    if (this.canvas != null) {
+                        this.canvas.notifyTextChanged(newValue);
+                    }
                 });
 
         // Build Tool bar VBox
-        this.toolbarVBox = new VBox(Constants.VBOX_SPACING);
-        this.toolbarVBox.getChildren().addAll(lineButton, circleButton,
-                rectButton, textButton, textArea);
-        this.toolbarVBox.setPadding(new Insets(Constants.VBOX_PADDING));
-        this.toolbarVBox.setStyle(Constants.DRAW_TOOLS_BACKGROUND_COLOR);
-        this.toolbarVBox.setPrefWidth(Constants.VBOX_PREF_WIDTH);
+        VBox vbox = new VBox(Constants.VBOX_SPACING);
+        vbox.getChildren().addAll(lineButton, circleButton, rectButton,
+                textButton, textArea);
+        vbox.setPadding(new Insets(Constants.VBOX_PADDING));
+        vbox.setStyle(Constants.DRAW_TOOLS_BACKGROUND_COLOR);
+        vbox.setPrefWidth(Constants.VBOX_PREF_WIDTH);
 
-        return this.toolbarVBox;
+        return vbox;
     }
 
     /**
@@ -337,6 +354,7 @@ public class WhiteboardClient extends Application
 
         // Register action for New menu item
         newMenuItem.setOnAction(evt -> {
+            this.keepSaveImagePath = "";
             this.canvas.clearGraphicsContext();
         });
 
@@ -350,6 +368,7 @@ public class WhiteboardClient extends Application
                     InputStream io = new FileInputStream(file);
                     Image img = new Image(io);
                     this.canvas.drawImage(img);
+                    this.keepSaveImagePath = file.getAbsolutePath();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -358,12 +377,38 @@ public class WhiteboardClient extends Application
 
         // Register action for Save menu item
         saveMenuItem.setOnAction(evt -> {
-            FileChooser savefile = buildFileChooser(Constants.SAVE_FILE_TITLE);
+            File file = null;
+            
+            if (StringHelper.isNullOrEmpty(this.keepSaveImagePath)) {
+                FileChooser saveFile = buildFileChooser(
+                        Constants.SAVE_FILE_TITLE);
+                file = saveFile.showSaveDialog(stage);
+                this.keepSaveImagePath = file.getAbsolutePath();
+            } else {
+                file = new File(this.keepSaveImagePath);
+            }
 
-            File file = savefile.showSaveDialog(stage);
             if (file != null) {
                 this.canvas.saveImage(file);
             }
+        });
+
+        // Register action for Save As menu item
+        saveAsMenuItem.setOnAction(evt -> {
+            FileChooser saveAsFile = buildFileChooser(
+                    Constants.SAVE_AS_FILE_TITLE);
+
+            File file = saveAsFile.showSaveDialog(stage);
+            if (file != null) {
+                this.canvas.saveImage(file);
+            }
+        });
+
+        // Register action for Close menu item
+        closeMenuItem.setOnAction(evt -> {
+            Platform.runLater(() -> {
+                Platform.exit();
+            });
         });
 
         // Add menu to main menu bar
@@ -410,8 +455,13 @@ public class WhiteboardClient extends Application
     @Override
     public void onConnectionStatusChanged(boolean isConnected) {
         Platform.runLater(() -> {
-            this.toolbarVBox.setDisable(!isConnected);
-            this.canvas.setDisable(!isConnected);
+            if (this.toolbarVBox != null) {
+                this.toolbarVBox.setDisable(!isConnected);
+            }
+
+            if (this.canvas != null) {
+                this.canvas.setDisable(!isConnected);
+            }
         });
 
         if (isConnected) {
@@ -427,29 +477,114 @@ public class WhiteboardClient extends Application
     /**
      * On handshake establishment changed.
      *
-     * @param isOkAck the is ok ack
+     * @param acknowledgement the acknowledgement
      */
     @Override
-    public void onHandshakeEstablishmentChanged(boolean isOkAck) {
-        if (!isOkAck) {
-            ButtonType joinType = new ButtonType(
-                    Constants.JOIN_BUTTON_TYPE_NAME);
-            ButtonType closeType = new ButtonType(
-                    Constants.CLOSE_BUTTON_TYPE_NAME);
-
+    public void onHandshakeEstablishmentChanged(String acknowledgement) {
+        if (Constants.ACK_USER_NAME_EXISTED.equalsIgnoreCase(acknowledgement)) {
             Platform.runLater(() -> {
-                Optional<ButtonType> result = AlertHelper.showConfirmation(
+                Optional<ButtonType> result = AlertHelper.showWarning(
+                        this.owner, "Warning",
+                        String.format(
+                                "The user name [%s] existed in the system. The application will be closed.",
+                                UserInformation.getInstance().getUserName()));
+                if (result.get() == ButtonType.OK) {
+                    Platform.exit();
+                }
+            });
+        } else if (Constants.ACK_MANAGER_EXISTED
+                .equalsIgnoreCase(acknowledgement)) {
+            Platform.runLater(() -> {
+                Optional<ButtonType> result = AlertHelper.showWarning(
                         this.owner, "Confirmation",
-                        "There is already a user with the manager role. "
-                                + "Do you want to join the shared whiteboard or close the application?",
-                        joinType, closeType);
+                        "There is already a user with the manager role."
+                                + "The application will be closed.");
 
-                if (result.get() == closeType) {
+                if (result.get() == ButtonType.OK) {
                     Platform.exit();
                 }
             });
 
         }
+    }
+
+    /**
+     * On white board join approval requested.
+     *
+     * @param userName the user name
+     */
+    @Override
+    public void onWhiteboardJoinApprovalRequested(String userName) {
+        ButtonType approveType = new ButtonType(
+                Constants.APPROVE_BUTTON_TYPE_NAME);
+        ButtonType cancelType = new ButtonType(
+                Constants.CANCEL_BUTTON_TYPE_NAME);
+
+        Platform.runLater(() -> {
+            Optional<ButtonType> result = AlertHelper.showConfirmation(
+                    this.owner, "Confirmation",
+                    String.format("User [%s] wants to share your whiteboard.",
+                            userName),
+                    approveType, cancelType);
+
+            String acknowledgment = Constants.ACK_APPROVED;
+            if (result.get() == cancelType) {
+                acknowledgment = Constants.ACK_CANCELED;
+            }
+
+            SocketHandler.getInstance()
+                    .send(EventMessageBuilder
+                            .buildRequestWhiteboardJoinApprovalAckMessage(
+                                    userName, acknowledgment));
+        });
+    }
+
+    /**
+     * On white board join approval acknowledgement.
+     *
+     * @param acknowledgement the acknowledgement
+     */
+    @Override
+    public void onWhiteboardJoinApprovalAcknowledgement(
+            String acknowledgement) {
+        Platform.runLater(() -> {
+            if (Constants.ACK_APPROVED.equalsIgnoreCase(acknowledgement)) {
+                AlertHelper.showAlert(AlertType.INFORMATION, this.owner,
+                        "Information.",
+                        "The whiteboard manager apporved your join request. You can edit shared whiteboard now.");
+            } else if (Constants.ACK_CANCELED
+                    .equalsIgnoreCase(acknowledgement)) {
+
+                Optional<ButtonType> result = AlertHelper.showWarning(
+                        this.owner, "Warning",
+                        "The whiteboard manager does not approve your join request."
+                                + "The application will be closed.");
+
+                if (result.get() == ButtonType.OK) {
+                    Platform.exit();
+                }
+
+            }
+        });
+    }
+
+    /**
+     * On white board owner shutdown notification.
+     */
+    @Override
+    public void onWhiteboardOwnerShutdownNotification() {
+        Platform.runLater(() -> {
+            Optional<ButtonType> result = AlertHelper.showWarning(this.owner,
+                    "Warning",
+                    "The white board manager shutted down."
+                            + "The shared whiteboard is not allowed to edit."
+                            + "The application will be closed.");
+
+            if (result.get() == ButtonType.OK) {
+                Platform.exit();
+            }
+        });
+
     }
 
     /**
@@ -595,5 +730,4 @@ public class WhiteboardClient extends Application
             this.canvas.drawText(startX, startY, text);
         });
     }
-
 }

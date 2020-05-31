@@ -20,17 +20,29 @@ public class RetrieveMsgJob extends AbstractJob {
 
             if (message != null) {
                 String eventName = EventMessageParser.extractEventName(message);
+                String userName = EventMessageParser.extractUserName(message);
 
-                if (Constants.HANDSHAKE_ACKNOWLEDGMENT_EVT_NAME
+                if (Constants.WHITEBOARD_OWNER_SHUTDOWN_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    ChangeNotifier.getInstance()
+                            .onWhiteboardOwnerShutdownNotification();
+                } else if (Constants.HANDSHAKE_ACKNOWLEDGMENT_EVT_NAME
                         .equalsIgnoreCase(eventName)) {
                     String acknowledgment = EventMessageParser
-                            .extractValFromMessage(message,
-                                    Constants.ACK_ATTR);
-
-                    if (!Constants.ACK_OK.equalsIgnoreCase(acknowledgment)) {
-                        ChangeNotifier.getInstance()
-                                .onHandshakeEstablishmentChanged(false);
-                    }
+                            .extractValFromMessage(message, Constants.ACK_ATTR);
+                    ChangeNotifier.getInstance()
+                            .onHandshakeEstablishmentChanged(acknowledgment);
+                } else if (Constants.REQUEST_WHITEBOARD_JOIN_APPROVAL_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    ChangeNotifier.getInstance()
+                            .onWhiteboardJoinApprovalRequested(userName);
+                } else if (Constants.REQUEST_WHITEBOARD_JOIN_APPROVAL_ACK_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    String acknowledgment = EventMessageParser
+                            .extractValFromMessage(message, Constants.ACK_ATTR);
+                    ChangeNotifier.getInstance()
+                            .onWhiteboardJoinApprovalAcknowledgement(
+                                    acknowledgment);
                 } else if (Constants.LINE_SYN_EVT_NAME
                         .equalsIgnoreCase(eventName)
                         || Constants.CIRCLE_SYN_EVT_NAME
@@ -43,8 +55,6 @@ public class RetrieveMsgJob extends AbstractJob {
                             .onShapeSynchronizationChanged(message);
                 } else if (Constants.WHITE_BOARD_SYS_EVT_NAME
                         .equalsIgnoreCase(eventName)) {
-                    String userName = EventMessageParser
-                            .extractUserName(message);
                     ChangeNotifier.getInstance()
                             .onWholeWhiteboardRequested(userName);
                 } else if (Constants.WHITE_BOARD_SYS_ACKNOWLEDGMENT

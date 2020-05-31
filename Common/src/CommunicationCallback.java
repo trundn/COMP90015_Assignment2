@@ -11,9 +11,28 @@ public interface CommunicationCallback {
     /**
      * On handshake establishment changed.
      *
-     * @param isOkAck the is ok ack
+     * @param ackowledgement the acknowledgement
      */
-    void onHandshakeEstablishmentChanged(boolean isOkAck);
+    void onHandshakeEstablishmentChanged(String acknowledgement);
+
+    /**
+     * On white board join approval requested.
+     *
+     * @param userName the user name
+     */
+    void onWhiteboardJoinApprovalRequested(String userName);
+
+    /**
+     * On white board join approval acknowledgement.
+     *
+     * @param acknowledgement the acknowledgement
+     */
+    void onWhiteboardJoinApprovalAcknowledgement(String acknowledgement);
+
+    /**
+     * On white board owner shutdown notification.
+     */
+    void onWhiteboardOwnerShutdownNotification();
 
     /**
      * On shape synchronization changed.
@@ -23,14 +42,14 @@ public interface CommunicationCallback {
     void onShapeSynchronizationChanged(JSONObject message);
 
     /**
-     * On whole whiteboard requested.
+     * On whole white board requested.
      *
      * @param requestUserName the request user name
      */
     void onWholeWhiteboardRequested(String requestUserName);
 
     /**
-     * On whole whiteboard acknowledgement.
+     * On whole white board acknowledgement.
      *
      * @param imageAsString the image as string
      */

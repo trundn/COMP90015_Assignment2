@@ -33,13 +33,6 @@ public class WhiteboardServer extends Application implements MessageCallback {
      * @param args the arguments
      */
     public static void main(String[] args) {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                SocketAcceptor.getInstance().cleanUp();
-            }
-        });
-
         if (args.length < 1) {
             System.out.println(
                     "The port should be specified in command line argument.");
@@ -163,6 +156,16 @@ public class WhiteboardServer extends Application implements MessageCallback {
 
         // Display the Stage
         stage.show();
+    }
+
+    /**
+     * Stop.
+     *
+     * @throws Exception the exception
+     */
+    @Override
+    public void stop() throws Exception {
+        SocketAcceptor.getInstance().cleanUp();
     }
 
     /**

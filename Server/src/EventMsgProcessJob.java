@@ -58,6 +58,9 @@ public class EventMsgProcessJob extends AbstractJob {
             if (Constants.HANDSHAKE_ESTABLISHMENT_EVT_NAME
                     .equalsIgnoreCase(eventName)) {
                 this.handleHandshakeEstablishment();
+            } else if (Constants.REQUEST_WHITEBOARD_JOIN_APPROVAL_ACK_EVT_NAME
+                    .equalsIgnoreCase(eventName)) {
+                this.handleWhiteboardJoinRequestAcknowledgment();
             } else if (Constants.LINE_SYN_EVT_NAME.equalsIgnoreCase(eventName)
                     || Constants.CIRCLE_SYN_EVT_NAME.equalsIgnoreCase(eventName)
                     || Constants.RECTANGLE_SYN_EVT_NAME
@@ -72,6 +75,33 @@ public class EventMsgProcessJob extends AbstractJob {
         }
 
         return null;
+    }
+
+    /**
+     * Handle white board join request acknowledgment.
+     */
+    private void handleWhiteboardJoinRequestAcknowledgment() {
+        // Extract user name from header
+        String userName = EventMessageParser.extractUserName(this.message);
+
+        // Check if user name existed in the system or not
+        SocketConnection existedConnection = SocketManager.getInstance()
+                .getUserConnection(userName);
+        if (existedConnection != null) {
+            existedConnection.send(this.message);
+
+            // Request white board manager send the lasted canvas if needed
+            String acknowledgment = EventMessageParser
+                    .extractValFromMessage(this.message, Constants.ACK_ATTR);
+            if (Constants.ACK_APPROVED.equalsIgnoreCase(acknowledgment)) {
+                SocketConnection whiteboardOwner = SocketManager.getInstance()
+                        .getWhiteboardOwnerConnection();
+                if (whiteboardOwner != null) {
+                    whiteboardOwner.send(EventMessageBuilder
+                            .buildWhiteboardSynMessage(userName));
+                }
+            }
+        }
     }
 
     /**
@@ -105,43 +135,64 @@ public class EventMsgProcessJob extends AbstractJob {
      * @param request the request
      */
     private void handleHandshakeEstablishment() {
-        // Extract user name and manager role values
-        JSONObject eventContent = EventMessageParser
-                .extractEventContent(this.message);
-        String userName = EventMessageParser.extractUserName(this.message);
-        boolean isManager = Boolean.parseBoolean(
-                EventMessageParser.extractValFromContent(eventContent,
-                        Constants.MANAGER_ROLE_ATTR));
-
         String acknowledgment = Constants.ACK_OK;
-        if (isManager) {
-            SocketConnection managerRoleConnection = SocketManager.getInstance()
-                    .anyUserOwnWhiteboard();
-            if (managerRoleConnection != null) {
-                // Do not allow 2 users to have a manager role
-                isManager = false;
-                acknowledgment = Constants.ACK_NG;
-                // Identify connection with manger role
-                SocketManager.getInstance()
-                        .setWhiteboardOwnerConnection(managerRoleConnection);
+
+        // Extract user name from header
+        String userName = EventMessageParser.extractUserName(this.message);
+
+        // Check if user name existed in the system or not
+        SocketConnection existedConnection = SocketManager.getInstance()
+                .getUserConnection(userName);
+
+        if (existedConnection != null) {
+            System.out.println(existedConnection);
+            acknowledgment = Constants.ACK_USER_NAME_EXISTED;
+            // Send response acknowledgement to client
+            this.sendResponse(EventMessageBuilder
+                    .buildHandshakeEstablishmentAckMessage(acknowledgment));
+        } else {
+            // Update user information
+            this.connection.setUserName(userName);
+
+            // Extract user role from event body
+            JSONObject eventContent = EventMessageParser
+                    .extractEventContent(this.message);
+            boolean isManager = Boolean.parseBoolean(
+                    EventMessageParser.extractValFromContent(eventContent,
+                            Constants.MANAGER_ROLE_ATTR));
+
+            if (isManager) {
+                SocketConnection owningWhiteboard = SocketManager.getInstance()
+                        .anyUserOwningWhiteboard();
+                if (owningWhiteboard != null) {
+                    // Do not allow 2 users to have a manager role
+                    acknowledgment = Constants.ACK_MANAGER_EXISTED;
+                } else {
+                    // Update manager role for this socket connection
+                    this.connection.setManager(isManager);
+                    
+                    // Identify connection with manger role
+                    SocketManager.getInstance()
+                            .setWhiteboardOwnerConnection(this.connection);
+                }
             }
-        }
 
-        // Update user information
-        this.connection.setUserName(userName);
-        this.connection.setManager(isManager);
+            // Send response acknowledgement to client
+            this.sendResponse(EventMessageBuilder
+                    .buildHandshakeEstablishmentAckMessage(acknowledgment));
 
-        // Send response acknowledgement to client
-        this.sendResponse(EventMessageBuilder
-                .buildHandshakeEstablishmentAckMessage(acknowledgment));
-
-        // Request the lasted canvas from manager user
-        if (!isManager) {
-            SocketConnection manager = SocketManager.getInstance()
-                    .getWhiteboardOwnerConnection();
-            if (manager != null) {
-                manager.send(EventMessageBuilder
-                        .buildWhiteboardSynMessage(userName));
+            // Send white board join approval request message to manager if
+            // needed
+            System.out.println("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVV");
+            System.out.println(this.connection.isManager());
+            if (Constants.ACK_OK.equalsIgnoreCase(acknowledgment)
+                    && !this.connection.isManager()) {
+                System.out.println(
+                        "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+                SocketConnection whiteboardOwner = SocketManager.getInstance()
+                        .getWhiteboardOwnerConnection();
+                whiteboardOwner.send(EventMessageBuilder
+                        .buildRequestWhiteboardJoinApprovalMessage(userName));
             }
         }
     }

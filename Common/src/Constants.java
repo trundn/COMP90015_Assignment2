@@ -93,6 +93,9 @@ public class Constants {
     /** The Constant SAVE_FILE_TITLE. */
     public static final String SAVE_FILE_TITLE = "Save File";
 
+    /** The Constant SAVE_AS_FILE_TITLE. */
+    public static final String SAVE_AS_FILE_TITLE = "Save As File";
+
     /** The Constant PNG_FILE_EXTENSION_UPPER. */
     public static final String PNG_FILE_EXTENSION_UPPER = "PNG";
 
@@ -102,8 +105,11 @@ public class Constants {
     /** The Constant PNG_FILE_FILTER. */
     public static final String PNG_FILE_FILTER = "*.png";
 
-    /** The Constant JOIN_BUTTON_TYPE_NAME. */
-    public static final String JOIN_BUTTON_TYPE_NAME = "Join";
+    /** The Constant APPROVE_BUTTON_TYPE_NAME. */
+    public static final String APPROVE_BUTTON_TYPE_NAME = "Approve";
+
+    /** The Constant CANCEL_BUTTON_TYPE_NAME. */
+    public static final String CANCEL_BUTTON_TYPE_NAME = "Cancel";
 
     /** The Constant CLOSE_BUTTON_TYPE_NAME. */
     public static final String CLOSE_BUTTON_TYPE_NAME = "Close";
@@ -111,8 +117,17 @@ public class Constants {
     /** The Constant ACK_OK. */
     public static final String ACK_OK = "OK";
 
-    /** The Constant ACK_NG. */
-    public static final String ACK_NG = "NG";
+    /** The Constant ACK_MANAGER_EXISTED. */
+    public static final String ACK_MANAGER_EXISTED = "MANAGER_EXISTED";
+
+    /** The Constant ACK_USER_NAME_EXISTED. */
+    public static final String ACK_USER_NAME_EXISTED = "USER_NAME_EXISTED";
+
+    /** The Constant ACK_APPROVED. */
+    public static final String ACK_APPROVED = "APPROVED";
+
+    /** The Constant ACK_CANCELED. */
+    public static final String ACK_CANCELED = "CANCELED";
 
     /** The Constant PING_EVT_NAME. */
     public static final String PING_EVT_NAME = "ping";
@@ -123,8 +138,17 @@ public class Constants {
     /** The Constant HANDSHAKE_ACKNOWLEDGMENT_EVT_NAME. */
     public static final String HANDSHAKE_ACKNOWLEDGMENT_EVT_NAME = "handshake_ack";
 
+    /** The Constant REQUEST_WHITEBOARD_JOIN_APPROVAL_EVT_NAME. */
+    public static final String REQUEST_WHITEBOARD_JOIN_APPROVAL_EVT_NAME = "request_whiteboard_join_approval";
+
+    /** The Constant REQUEST_WHITEBOARD_JOIN_APPROVAL_ACK_EVT_NAME. */
+    public static final String REQUEST_WHITEBOARD_JOIN_APPROVAL_ACK_EVT_NAME = "request_whiteboard_join_approval_ack";
+
     /** The Constant CLIENT_SHUTDOWN_EVT_NAME. */
     public static final String CLIENT_SHUTDOWN_EVT_NAME = "client_shutdown_notification";
+
+    /** The Constant WHITEBOARD_OWNER_SHUTDOWN_EVT_NAME. */
+    public static final String WHITEBOARD_OWNER_SHUTDOWN_EVT_NAME = "whiteboard_owner_shutdown_notification";
 
     /** The Constant WHITE_BOARD_SYS_EVT_NAME. */
     public static final String WHITE_BOARD_SYS_EVT_NAME = "whiteboard_synchronization";
@@ -158,7 +182,7 @@ public class Constants {
 
     /** The Constant USER_NAME_ATTR. */
     public static final String USER_NAME_ATTR = "user_name";
-    
+
     /** The Constant HOST_ADDRESS_ATTR. */
     public static final String HOST_ADDRESS_ATTR = "host_address";
 

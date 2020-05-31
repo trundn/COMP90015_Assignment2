@@ -137,9 +137,13 @@ public class SocketConnection {
                 this.outputStream.writeObject(message);
                 String eventName = EventMessageParser.extractEventName(message);
 
+                String notifiedMessage = "Sent message to client. Content: "
+                        + message.toString();
+
                 if (!Constants.PING_EVT_NAME.equalsIgnoreCase(eventName)) {
-                    System.out.println("Sent message to client. Content: "
-                            + message.toString());
+                    System.out.println(notifiedMessage);
+                    ChangeNotifier.getInstance()
+                            .onMessageChanged(notifiedMessage);
                 }
             } catch (IOException ex) {
                 error = "Cannot send message to client. Error: "

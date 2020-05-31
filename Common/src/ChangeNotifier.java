@@ -68,8 +68,6 @@ public class ChangeNotifier {
      * @param newMessage the new message
      */
     public void onMessageChanged(String newMessage) {
-        System.out.println(newMessage);
-
         if (this.messageCallback != null) {
             this.messageCallback.onMessageChanged(newMessage);
         }
@@ -89,11 +87,46 @@ public class ChangeNotifier {
     /**
      * On handshake establishment changed.
      *
-     * @param isOkAck the is ok ack
+     * @param acknowledgement the acknowledgement
      */
-    public void onHandshakeEstablishmentChanged(boolean isOkAck) {
+    public void onHandshakeEstablishmentChanged(String acknowledgement) {
         if (this.communicationCallback != null) {
-            this.communicationCallback.onHandshakeEstablishmentChanged(isOkAck);
+            this.communicationCallback
+                    .onHandshakeEstablishmentChanged(acknowledgement);
+        }
+    }
+
+    /**
+     * On white board join approval requested.
+     *
+     * @param userName the user name
+     */
+    public void onWhiteboardJoinApprovalRequested(String userName) {
+        if (this.communicationCallback != null) {
+            this.communicationCallback
+                    .onWhiteboardJoinApprovalRequested(userName);
+        }
+    }
+
+    /**
+     * On white board join approval acknowledgement.
+     *
+     * @param acknowledgement the acknowledgement
+     */
+    public void onWhiteboardJoinApprovalAcknowledgement(
+            String acknowledgement) {
+        if (this.communicationCallback != null) {
+            this.communicationCallback
+                    .onWhiteboardJoinApprovalAcknowledgement(acknowledgement);
+        }
+    }
+
+    /**
+     * On white board owner shutdown notification.
+     */
+    public void onWhiteboardOwnerShutdownNotification() {
+        if (this.communicationCallback != null) {
+            this.communicationCallback.onWhiteboardOwnerShutdownNotification();
         }
     }
 
@@ -115,7 +148,8 @@ public class ChangeNotifier {
      */
     public void onWholeWhiteboardRequested(String requestUserName) {
         if (this.communicationCallback != null) {
-            this.communicationCallback.onWholeWhiteboardRequested(requestUserName);
+            this.communicationCallback
+                    .onWholeWhiteboardRequested(requestUserName);
         }
     }
 
@@ -126,7 +160,8 @@ public class ChangeNotifier {
      */
     public void onWholeWhiteboardAcknowledgement(String imageAsString) {
         if (this.communicationCallback != null) {
-            this.communicationCallback.onWholeWhiteboardAcknowledgement(imageAsString);
+            this.communicationCallback
+                    .onWholeWhiteboardAcknowledgement(imageAsString);
         }
     }
 

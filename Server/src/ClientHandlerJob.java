@@ -43,13 +43,9 @@ public class ClientHandlerJob extends AbstractJob {
                             message.toJSONString()));
                 }
 
-                if (Constants.CLIENT_SHUTDOWN_EVT_NAME.equalsIgnoreCase(eventName)) {
-                    ChangeNotifier.getInstance()
-                            .onMessageChanged(String.format(
-                                    "Client [%s] is shuting down.",
-                                    this.socketConnection.getLocalAddress()));
-                    this.cancel();
-                    this.socketConnection.cleanUp();
+                if (Constants.CLIENT_SHUTDOWN_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    this.handleClientShutdownNotification();
                 } else {
                     EventMsgProcessJob job = new EventMsgProcessJob(
                             this.socketConnection, message);
@@ -59,6 +55,32 @@ public class ClientHandlerJob extends AbstractJob {
         }
 
         return null;
+    }
+
+    /**
+     * Handle client shutdown notification.
+     */
+    private void handleClientShutdownNotification() {
+        ChangeNotifier.getInstance()
+                .onMessageChanged(String.format("Client [%s] is shuting down.",
+                        this.socketConnection.getLocalAddress()));
+        // Clean up socket connection
+        this.cancel();
+        this.socketConnection.cleanUp();
+
+        // Remove socket connection
+        SocketManager.getInstance()
+                .remove(this.socketConnection.getIdentifier());
+
+        // Broadcast white board owner shutdown notification message
+        if (this.socketConnection.isManager()) {
+            JSONObject broadcastMessage = EventMessageBuilder
+                    .buildWhiteboardManagerShutdownBroadcastMessage();
+            for (SocketConnection tobeBroadcasted : SocketManager.getInstance()
+                    .getAllUserConnectionList()) {
+                tobeBroadcasted.send(broadcastMessage);
+            }
+        }
     }
 
 }

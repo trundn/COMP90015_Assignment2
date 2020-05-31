@@ -68,5 +68,22 @@ public class AlertHelper {
         alert.initOwner(owner);
         return alert.showAndWait();
     }
+    
+    /**
+     * Show warning.
+     *
+     * @param owner the owner
+     * @param title the title
+     * @param message the message
+     * @return the optional
+     */
+    public static Optional<ButtonType> showWarning(Window owner,
+            String title, String message) {
+        Alert alert = new Alert(AlertType.WARNING, message, ButtonType.OK);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.initOwner(owner);
+        return alert.showAndWait();
+    }
 
 }

@@ -57,15 +57,14 @@ public class EventMessageBuilder {
     }
 
     /**
-     * Builds the shut down message.
+     * Builds the client shut down message.
      *
-     * @param hostAddress the host address
-     * @param userName    the user name
-     * @param isManager   the is manager
+     * @param userName  the user name
+     * @param isManager the is manager
      * @return the JSON object
      */
     @SuppressWarnings("unchecked")
-    public static JSONObject buildShutDownMessage(String userName,
+    public static JSONObject buildClientShutDownMessage(String userName,
             boolean isManager) {
         JSONObject content = new JSONObject();
         content.put(Constants.MANAGER_ROLE_ATTR, isManager);
@@ -73,6 +72,21 @@ public class EventMessageBuilder {
         JSONObject header = buildEventHeader(userName);
         JSONObject body = buildEventBody(Constants.CLIENT_SHUTDOWN_EVT_NAME,
                 content);
+
+        return buildEventMessage(header, body);
+    }
+
+    /**
+     * Builds the white board manager shutdown broadcast message.
+     *
+     * @return the JSON object
+     */
+    public static JSONObject buildWhiteboardManagerShutdownBroadcastMessage() {
+        JSONObject content = new JSONObject();
+
+        JSONObject header = buildEventHeader("");
+        JSONObject body = buildEventBody(
+                Constants.WHITEBOARD_OWNER_SHUTDOWN_EVT_NAME, content);
 
         return buildEventMessage(header, body);
     }
@@ -113,15 +127,16 @@ public class EventMessageBuilder {
 
         return buildEventMessage(header, body);
     }
-    
+
     /**
-     * Builds the handshake establishment ack message.
+     * Builds the handshake establishment acknowledgment message.
      *
      * @param acknowledgment the acknowledgment
      * @return the JSON object
      */
     @SuppressWarnings("unchecked")
-    public static JSONObject buildHandshakeEstablishmentAckMessage(String acknowledgment) {
+    public static JSONObject buildHandshakeEstablishmentAckMessage(
+            String acknowledgment) {
         JSONObject content = new JSONObject();
         content.put(Constants.ACK_ATTR, acknowledgment);
 
@@ -133,7 +148,43 @@ public class EventMessageBuilder {
     }
 
     /**
-     * Builds the line syn message.
+     * Builds the request white board join approval message.
+     *
+     * @param userName the user name
+     * @return the JSON object
+     */
+    public static JSONObject buildRequestWhiteboardJoinApprovalMessage(
+            String userName) {
+        JSONObject content = new JSONObject();
+
+        JSONObject header = buildEventHeader(userName);
+        JSONObject body = buildEventBody(
+                Constants.REQUEST_WHITEBOARD_JOIN_APPROVAL_EVT_NAME, content);
+
+        return buildEventMessage(header, body);
+    }
+
+    /**
+     * Builds the request white board join approval ack message.
+     *
+     * @param userName the user name
+     * @return the JSON object
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONObject buildRequestWhiteboardJoinApprovalAckMessage(
+            String userName, String acknowledgment) {
+        JSONObject content = new JSONObject();
+        content.put(Constants.ACK_ATTR, acknowledgment);
+
+        JSONObject header = buildEventHeader(userName);
+        JSONObject body = buildEventBody(
+                Constants.REQUEST_WHITEBOARD_JOIN_APPROVAL_ACK_EVT_NAME, content);
+
+        return buildEventMessage(header, body);
+    }
+
+    /**
+     * Builds the line synchronization message.
      *
      * @param userName the user name
      * @param startX   the start X
@@ -158,7 +209,7 @@ public class EventMessageBuilder {
     }
 
     /**
-     * Builds the circle syn message.
+     * Builds the circle synchronization message.
      *
      * @param userName the user name
      * @param centerX  the center X
@@ -182,7 +233,7 @@ public class EventMessageBuilder {
     }
 
     /**
-     * Builds the rectangle syn message.
+     * Builds the rectangle synchronization message.
      *
      * @param userName the user name
      * @param startX   the start X
@@ -208,7 +259,7 @@ public class EventMessageBuilder {
     }
 
     /**
-     * Builds the text syn message.
+     * Builds the text synchronization message.
      *
      * @param userName the user name
      * @param startX   the start X
@@ -229,9 +280,9 @@ public class EventMessageBuilder {
 
         return buildEventMessage(header, body);
     }
-    
+
     /**
-     * Builds the white board syn message.
+     * Builds the white board synchronization message.
      *
      * @param userName the user name
      * @return the JSON object
@@ -240,14 +291,14 @@ public class EventMessageBuilder {
         JSONObject content = new JSONObject();
 
         JSONObject header = buildEventHeader(userName);
-        JSONObject body = buildEventBody(
-                Constants.WHITE_BOARD_SYS_EVT_NAME, content);
+        JSONObject body = buildEventBody(Constants.WHITE_BOARD_SYS_EVT_NAME,
+                content);
 
         return buildEventMessage(header, body);
     }
 
     /**
-     * Builds the white board syn ack message.
+     * Builds the white board synchronization acknowledgment message.
      *
      * @param userName      the user name
      * @param imageAsString the image as string
