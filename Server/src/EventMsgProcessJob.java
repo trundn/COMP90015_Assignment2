@@ -2,9 +2,9 @@ import java.util.ArrayList;
 import org.json.simple.JSONObject;
 
 /**
- * The Class RequestProcessJob.
+ * The Class EventMsgProcessJob.
  */
-public class RequestProcessJob extends AbstractJob {
+public class EventMsgProcessJob extends AbstractJob {
 
     /** The connection. */
     private SocketConnection connection;
@@ -18,7 +18,7 @@ public class RequestProcessJob extends AbstractJob {
      * @param connection the connection
      * @param message    the message
      */
-    public RequestProcessJob(SocketConnection connection, JSONObject message) {
+    public EventMsgProcessJob(SocketConnection connection, JSONObject message) {
         if (message == null) {
             throw new IllegalArgumentException(
                     "The given request JSON object is NULL.");
@@ -116,14 +116,14 @@ public class RequestProcessJob extends AbstractJob {
         String acknowledgment = Constants.ACK_OK;
         if (isManager) {
             SocketConnection managerRoleConnection = SocketManager.getInstance()
-                    .anyUsersWithManagerRole();
+                    .anyUserOwnWhiteboard();
             if (managerRoleConnection != null) {
                 // Do not allow 2 users to have a manager role
                 isManager = false;
                 acknowledgment = Constants.ACK_NG;
                 // Identify connection with manger role
                 SocketManager.getInstance()
-                        .setManagerUserConnection(managerRoleConnection);
+                        .setWhiteboardOwnerConnection(managerRoleConnection);
             }
         }
 
@@ -138,7 +138,7 @@ public class RequestProcessJob extends AbstractJob {
         // Request the lasted canvas from manager user
         if (!isManager) {
             SocketConnection manager = SocketManager.getInstance()
-                    .getManagerUserConnection();
+                    .getWhiteboardOwnerConnection();
             if (manager != null) {
                 manager.send(EventMessageBuilder
                         .buildWhiteboardSynMessage(userName));

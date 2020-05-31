@@ -11,7 +11,7 @@ public class SocketManager {
     private static SocketManager INSTANCE;
 
     /** The manager user connection. */
-    private SocketConnection managerUserConnection;
+    private SocketConnection whiteboardOwnerConnection;
 
     /** The connection map. */
     private Map<String, SocketConnection> connectionMap;
@@ -65,11 +65,11 @@ public class SocketManager {
     }
 
     /**
-     * Any users with manager role.
+     * Any user own white board.
      *
      * @return the socket connection
      */
-    public synchronized SocketConnection anyUsersWithManagerRole() {
+    public synchronized SocketConnection anyUserOwnWhiteboard() {
         SocketConnection result = null;
 
         for (SocketConnection connection : this.connectionMap.values()) {
@@ -125,22 +125,22 @@ public class SocketManager {
     }
 
     /**
-     * Gets the manager user connection.
+     * Gets the white board owner connection.
      *
-     * @return the manager user connection
+     * @return the white board owner connection
      */
-    public SocketConnection getManagerUserConnection() {
-        return this.managerUserConnection;
+    public SocketConnection getWhiteboardOwnerConnection() {
+        return this.whiteboardOwnerConnection;
     }
 
     /**
-     * Sets the manager role connection.
+     * Sets the white board owner connection.
      *
-     * @param managerRoleConnection the new manager role connection
+     * @param whiteboardOwner the new white board owner connection
      */
-    public synchronized void setManagerUserConnection(
-            SocketConnection managerRoleConnection) {
-        this.managerUserConnection = managerRoleConnection;
+    public synchronized void setWhiteboardOwnerConnection(
+            SocketConnection whiteboardOwner) {
+        this.whiteboardOwnerConnection = whiteboardOwner;
     }
 
 }

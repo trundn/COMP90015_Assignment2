@@ -51,7 +51,7 @@ public class ClientHandlerJob extends AbstractJob {
                     this.cancel();
                     this.socketConnection.cleanUp();
                 } else {
-                    RequestProcessJob job = new RequestProcessJob(
+                    EventMsgProcessJob job = new EventMsgProcessJob(
                             this.socketConnection, message);
                     this.requestProcessJobExecutor.queue(job);
                 }
