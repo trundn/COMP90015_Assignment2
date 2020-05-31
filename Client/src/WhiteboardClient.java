@@ -3,6 +3,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
@@ -20,14 +21,21 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -62,6 +70,15 @@ public class WhiteboardClient extends Application
 
     /** The text button. */
     private ToggleButton textButton;
+
+    /** The text area. */
+    private TextArea textArea;
+
+    /** The user list view. */
+    private ListView<String> userListView;
+
+    /** The kick user out button. */
+    private Button kickUserOutButton;
 
     /** The ping job. */
     private PingJob pingJob;
@@ -165,6 +182,9 @@ public class WhiteboardClient extends Application
         this.mainMenuBar = createMenuBar(stage);
         this.toolbarVBox = createToolbar();
 
+        // Enable or Disable menu bar based on user role
+        this.mainMenuBar.setDisable(!UserInformation.getInstance().isManager());
+
         // Create the Border Pane
         BorderPane borderPane = new BorderPane();
 
@@ -254,7 +274,7 @@ public class WhiteboardClient extends Application
         ToggleGroup toogleGroup = new ToggleGroup();
 
         for (ToggleButton button : toogleButtonList) {
-            button.setMinWidth(Constants.TOOGLE_BUTTON_MIN_WIDTH);
+            button.setMinWidth(Constants.BUTTON_MIN_WIDTH);
             button.setToggleGroup(toogleGroup);
             button.setCursor(Cursor.HAND);
         }
@@ -296,21 +316,59 @@ public class WhiteboardClient extends Application
         });
 
         // Create Text Area
-        TextArea textArea = new TextArea();
-        textArea.setPrefRowCount(3);
+        this.textArea = new TextArea();
+        this.textArea.setPrefRowCount(3);
 
         // Register text changed event for Text Area
-        textArea.textProperty()
+        this.textArea.textProperty()
                 .addListener((observable, oldValue, newValue) -> {
                     if (this.canvas != null) {
                         this.canvas.notifyTextChanged(newValue);
                     }
                 });
 
+        // Create User text field
+        TextFlow userText = new TextFlow(
+                new Text(UserInformation.getInstance().getUserName()));
+        userText.setTextAlignment(TextAlignment.CENTER);
+
+        // Create Horizontal separators
+        Separator separator1 = new Separator();
+        Separator separator2 = new Separator();
+
+        // Create User List View
+        Label userListLabel = new Label();
+        if (UserInformation.getInstance().isManager()) {
+            userListLabel.setText(Constants.USER_LIST_LABEL_TEXT);
+        } else {
+            userListLabel.setText(Constants.ONLINE_PEERS_LABEL_TEXT);
+        }
+        this.userListView = new ListView<String>();
+        this.userListView.setMaxHeight(Constants.USER_LIST_VIEW_MAX_HEIGHT);
+
+        // Create Kick User Out button
+        this.kickUserOutButton = new Button();
+        this.kickUserOutButton.setMinWidth(Constants.BUTTON_MIN_WIDTH);
+        this.kickUserOutButton.setText(Constants.KICK_OUT_BUTTON_TEXT);
+        this.kickUserOutButton
+                .setVisible(UserInformation.getInstance().isManager());
+
+        // Register action for Kick out button
+        this.kickUserOutButton.setOnAction(evt -> {
+            String selectedUser = this.userListView.getSelectionModel()
+                    .getSelectedItem();
+            if (!StringHelper.isNullOrEmpty(selectedUser)) {
+                SocketHandler.getInstance().send(EventMessageBuilder
+                        .buildKickUserOutMessage(selectedUser));
+            }
+        });
+
         // Build Tool bar VBox
         VBox vbox = new VBox(Constants.VBOX_SPACING);
-        vbox.getChildren().addAll(lineButton, circleButton, rectButton,
-                textButton, textArea);
+        vbox.getChildren().addAll(userText, separator1, this.lineButton,
+                this.circleButton, this.rectButton, this.textButton,
+                this.textArea, separator2, userListLabel, this.userListView,
+                this.kickUserOutButton);
         vbox.setPadding(new Insets(Constants.VBOX_PADDING));
         vbox.setStyle(Constants.DRAW_TOOLS_BACKGROUND_COLOR);
         vbox.setPrefWidth(Constants.VBOX_PREF_WIDTH);
@@ -378,7 +436,7 @@ public class WhiteboardClient extends Application
         // Register action for Save menu item
         saveMenuItem.setOnAction(evt -> {
             File file = null;
-            
+
             if (StringHelper.isNullOrEmpty(this.keepSaveImagePath)) {
                 FileChooser saveFile = buildFileChooser(
                         Constants.SAVE_FILE_TITLE);
@@ -569,6 +627,66 @@ public class WhiteboardClient extends Application
     }
 
     /**
+     * On user added notification.
+     *
+     * @param userName the user name
+     */
+    @Override
+    public void onUserAddedNotification(String userName) {
+        Platform.runLater(() -> {
+            int index = this.userListView.getItems().indexOf(userName);
+            if (index == -1) {
+                this.userListView.getItems().add(userName);
+            }
+        });
+
+    }
+
+    /**
+     * On user removed notification.
+     *
+     * @param userName the user name
+     */
+    @Override
+    public void onUserRemovedNotification(String userName) {
+        Platform.runLater(() -> {
+            int index = this.userListView.getItems().indexOf(userName);
+            this.userListView.getItems().remove(index);
+        });
+    }
+
+    /**
+     * On manager kick user out notification.
+     */
+    @Override
+    public void OnManagerKickUserOutNotification() {
+        Platform.runLater(() -> {
+            Optional<ButtonType> result = AlertHelper.showWarning(this.owner,
+                    "Warning", "The white board manager kicked you out."
+                            + "The application will be closed.");
+
+            if (result.get() == ButtonType.OK) {
+                Platform.exit();
+            }
+        });
+    }
+
+    /**
+     * On all online users synchronization.
+     *
+     * @param userNameList the user name list
+     */
+    @Override
+    public void onAllOnlineUsersSynchronization(
+            ArrayList<String> userNameList) {
+        Platform.runLater(() -> {
+            if (userNameList != null && !userNameList.isEmpty()) {
+                this.userListView.getItems().addAll(userNameList);
+            }
+        });
+    }
+
+    /**
      * On white board owner shutdown notification.
      */
     @Override
@@ -584,7 +702,6 @@ public class WhiteboardClient extends Application
                 Platform.exit();
             }
         });
-
     }
 
     /**
@@ -730,4 +847,5 @@ public class WhiteboardClient extends Application
             this.canvas.drawText(startX, startY, text);
         });
     }
+
 }

@@ -19,6 +19,9 @@ public class SocketConnection {
     /** The is manager. */
     private boolean isManager;
 
+    /** The is joined white board. */
+    private boolean isJoinedWhiteboard;
+
     /** The client socket. */
     private Socket clientSocket;
 
@@ -121,6 +124,24 @@ public class SocketConnection {
      */
     public void setManager(boolean isManager) {
         this.isManager = isManager;
+    }
+
+    /**
+     * Checks if is joined white board.
+     *
+     * @return true, if is joined white board
+     */
+    public boolean isJoinedWhiteboard() {
+        return isJoinedWhiteboard;
+    }
+
+    /**
+     * Sets the joined white board.
+     *
+     * @param isJoinedWhiteboard the new joined white board
+     */
+    public void setJoinedWhiteboard(boolean isJoinedWhiteboard) {
+        this.isJoinedWhiteboard = isJoinedWhiteboard;
     }
 
     /**

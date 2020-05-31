@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 import org.json.simple.JSONObject;
 
 public interface CommunicationCallback {
@@ -28,6 +30,32 @@ public interface CommunicationCallback {
      * @param acknowledgement the acknowledgement
      */
     void onWhiteboardJoinApprovalAcknowledgement(String acknowledgement);
+
+    /**
+     * On user added notification.
+     *
+     * @param userName the user name
+     */
+    void onUserAddedNotification(String userName);
+
+    /**
+     * On user removed notification.
+     *
+     * @param userName the user name
+     */
+    void onUserRemovedNotification(String userName);
+
+    /**
+     * On manager kick user out notification.
+     */
+    void OnManagerKickUserOutNotification();
+
+    /**
+     * On all online users synchronization.
+     *
+     * @param userNameList the user name list
+     */
+    void onAllOnlineUsersSynchronization(ArrayList<String> userNameList);
 
     /**
      * On white board owner shutdown notification.

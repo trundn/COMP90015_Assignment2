@@ -12,8 +12,11 @@ public class Constants {
     /** The Constant MAX_PORT_NUMBER. */
     public static final int MAX_PORT_NUMBER = 49151;
 
-    /** The Constant TOOGLE_BUTTON_MIN_WIDTH. */
-    public static final double TOOGLE_BUTTON_MIN_WIDTH = 90;
+    /** The Constant BUTTON_MIN_WIDTH. */
+    public static final double BUTTON_MIN_WIDTH = 90;
+
+    /** The Constant USER_LIST_VIEW_MAX_HEIGHT. */
+    public static final double USER_LIST_VIEW_MAX_HEIGHT = 200;
 
     /** The canvas width. */
     public static final int CANVAS_WIDTH_INT = 680;
@@ -54,6 +57,12 @@ public class Constants {
     /** The charset name. */
     public static final String CHARSET_NAME = "UTF-8";
 
+    /** The Constant USER_LIST_LABEL_TEXT. */
+    public static final String USER_LIST_LABEL_TEXT = "User List";
+
+    /** The Constant ONLINE_PEERS_LABEL_TEXT. */
+    public static final String ONLINE_PEERS_LABEL_TEXT = "Online Peers";
+
     /** The Constant LINE_BUTTON_TEXT. */
     public static final String LINE_BUTTON_TEXT = "Line";
 
@@ -65,6 +74,9 @@ public class Constants {
 
     /** The Constant TEXT_BUTTON_TEXT. */
     public static final String TEXT_BUTTON_TEXT = "Text";
+
+    /** The Constant KICK_OUT_BUTTON_TEXT. */
+    public static final String KICK_OUT_BUTTON_TEXT = "Kick out";
 
     /** The Constant DRAW_TOOLS_BACKGROUND_COLOR. */
     public static final String DRAW_TOOLS_BACKGROUND_COLOR = "-fx-background-color: #dddddd";
@@ -144,6 +156,18 @@ public class Constants {
     /** The Constant REQUEST_WHITEBOARD_JOIN_APPROVAL_ACK_EVT_NAME. */
     public static final String REQUEST_WHITEBOARD_JOIN_APPROVAL_ACK_EVT_NAME = "request_whiteboard_join_approval_ack";
 
+    /** The Constant USER_ADDED_EVT_NAME. */
+    public static final String USER_ADDED_EVT_NAME = "user_added_notification";
+
+    /** The Constant USER_REMOVED_EVT_NAME. */
+    public static final String USER_REMOVED_EVT_NAME = "user_removed_notification";
+
+    /** The Constant ALL_ONLINE_USERS_SYN_EVT_NAME. */
+    public static final String ALL_ONLINE_USERS_SYN_EVT_NAME = "all_online_users_synchronization";
+
+    /** The Constant MANGER_KICK_USER_OUT_EVT_NAME. */
+    public static final String MANGER_KICK_USER_OUT_EVT_NAME = "manager_kick_user_out";
+
     /** The Constant CLIENT_SHUTDOWN_EVT_NAME. */
     public static final String CLIENT_SHUTDOWN_EVT_NAME = "client_shutdown_notification";
 
@@ -182,6 +206,9 @@ public class Constants {
 
     /** The Constant USER_NAME_ATTR. */
     public static final String USER_NAME_ATTR = "user_name";
+
+    /** The Constant USER_NAME_LIST_ATTR. */
+    public static final String USER_NAME_LIST_ATTR = "user_name_list";
 
     /** The Constant HOST_ADDRESS_ATTR. */
     public static final String HOST_ADDRESS_ATTR = "host_address";

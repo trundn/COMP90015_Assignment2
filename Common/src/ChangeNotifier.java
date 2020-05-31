@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 import org.json.simple.JSONObject;
 
 /**
@@ -105,6 +107,50 @@ public class ChangeNotifier {
         if (this.communicationCallback != null) {
             this.communicationCallback
                     .onWhiteboardJoinApprovalRequested(userName);
+        }
+    }
+
+    /**
+     * On user added notification.
+     *
+     * @param userName the user name
+     */
+    public void onUserAddedNotification(String userName) {
+        if (this.communicationCallback != null) {
+            this.communicationCallback.onUserAddedNotification(userName);
+        }
+    }
+
+    /**
+     * On user removed notification.
+     *
+     * @param userName the user name
+     */
+    public void onUserRemovedNotification(String userName) {
+        if (this.communicationCallback != null) {
+            this.communicationCallback.onUserRemovedNotification(userName);
+        }
+    }
+
+    /**
+     * On manager kick user out notification.
+     */
+    public void OnManagerKickUserOutNotification() {
+        if (this.communicationCallback != null) {
+            this.communicationCallback.OnManagerKickUserOutNotification();
+        }
+    }
+
+    /**
+     * On all online users synchronization.
+     *
+     * @param userNameList the user name list
+     */
+    public void onAllOnlineUsersSynchronization(
+            ArrayList<String> userNameList) {
+        if (this.communicationCallback != null) {
+            this.communicationCallback
+                    .onAllOnlineUsersSynchronization(userNameList);
         }
     }
 

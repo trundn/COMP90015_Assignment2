@@ -1,4 +1,6 @@
 
+import java.util.ArrayList;
+
 import org.json.simple.JSONObject;
 
 /**
@@ -43,6 +45,24 @@ public class RetrieveMsgJob extends AbstractJob {
                     ChangeNotifier.getInstance()
                             .onWhiteboardJoinApprovalAcknowledgement(
                                     acknowledgment);
+                } else if (Constants.USER_ADDED_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    ChangeNotifier.getInstance()
+                            .onUserAddedNotification(userName);
+                } else if (Constants.USER_REMOVED_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    ChangeNotifier.getInstance()
+                            .onUserRemovedNotification(userName);
+                } else if (Constants.MANGER_KICK_USER_OUT_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    ChangeNotifier.getInstance()
+                            .OnManagerKickUserOutNotification();
+                } else if (Constants.ALL_ONLINE_USERS_SYN_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    ArrayList<String> userNameList = EventMessageParser
+                            .extractUserNameList(message);
+                    ChangeNotifier.getInstance()
+                            .onAllOnlineUsersSynchronization(userNameList);
                 } else if (Constants.LINE_SYN_EVT_NAME
                         .equalsIgnoreCase(eventName)
                         || Constants.CIRCLE_SYN_EVT_NAME

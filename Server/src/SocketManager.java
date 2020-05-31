@@ -105,9 +105,9 @@ public class SocketManager {
 
         if (!StringHelper.isNullOrEmpty(userName)) {
             for (SocketConnection connection : this.connectionMap.values()) {
-                if (!StringHelper.isNullOrEmpty(connection.getUserName())
-                        && connection.getUserName()
-                                .equalsIgnoreCase(userName)) {
+                String curentName = connection.getUserName();
+                if (!StringHelper.isNullOrEmpty(curentName)
+                        && curentName.equalsIgnoreCase(userName)) {
                     result = connection;
                     break;
                 }
@@ -122,7 +122,7 @@ public class SocketManager {
      *
      * @return the all user connection list
      */
-    public Collection<SocketConnection> getAllUserConnectionList() {
+    public synchronized Collection<SocketConnection> getAllUserConnectionList() {
         return this.connectionMap.values();
     }
 
@@ -132,15 +132,34 @@ public class SocketManager {
      * @param exceptForUser the except for user
      * @return the user connection list
      */
-    public ArrayList<SocketConnection> getUserConnectionList(
+    public synchronized ArrayList<SocketConnection> getUserConnectionList(
             String exceptForUser) {
         ArrayList<SocketConnection> returnList = new ArrayList<SocketConnection>();
 
         if (!StringHelper.isNullOrEmpty(exceptForUser)) {
             for (SocketConnection connection : this.connectionMap.values()) {
-                if (!connection.getUserName().equalsIgnoreCase(exceptForUser)) {
+                String userName = connection.getUserName();
+                if (!StringHelper.isNullOrEmpty(userName)
+                        && !userName.equalsIgnoreCase(exceptForUser)) {
                     returnList.add(connection);
                 }
+            }
+        }
+
+        return returnList;
+    }
+
+    /**
+     * Gets the not joined white board connection list.
+     *
+     * @return the not joined white board connection list
+     */
+    public synchronized ArrayList<SocketConnection> getNotJoinedWhiteboardConnectionList() {
+        ArrayList<SocketConnection> returnList = new ArrayList<SocketConnection>();
+
+        for (SocketConnection connection : this.connectionMap.values()) {
+            if (!connection.isJoinedWhiteboard()) {
+                returnList.add(connection);
             }
         }
 
@@ -164,6 +183,31 @@ public class SocketManager {
     public synchronized void setWhiteboardOwnerConnection(
             SocketConnection whiteboardOwner) {
         this.whiteboardOwnerConnection = whiteboardOwner;
+    }
+
+    /**
+     * Gets the not manager user name list.
+     *
+     * @param exceptForUser the except for user
+     * @return the not manager user name list
+     */
+    public synchronized ArrayList<String> getNotManagerUserNameList(
+            String exceptForUser) {
+        ArrayList<String> returnList = new ArrayList<String>();
+
+        if (!StringHelper.isNullOrEmpty(exceptForUser)) {
+            for (SocketConnection connection : this.connectionMap.values()) {
+                if (!connection.isManager()) {
+                    String userName = connection.getUserName();
+                    if (!StringHelper.isNullOrEmpty(userName)
+                            && !userName.equalsIgnoreCase(exceptForUser)) {
+                        returnList.add(connection.getUserName());
+                    }
+                }
+            }
+        }
+
+        return returnList;
     }
 
 }

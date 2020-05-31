@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
@@ -178,7 +181,81 @@ public class EventMessageBuilder {
 
         JSONObject header = buildEventHeader(userName);
         JSONObject body = buildEventBody(
-                Constants.REQUEST_WHITEBOARD_JOIN_APPROVAL_ACK_EVT_NAME, content);
+                Constants.REQUEST_WHITEBOARD_JOIN_APPROVAL_ACK_EVT_NAME,
+                content);
+
+        return buildEventMessage(header, body);
+    }
+
+    /**
+     * Builds the user added broadcast message.
+     *
+     * @param userName       the user name
+     * @param acknowledgment the acknowledgment
+     * @return the JSON object
+     */
+    public static JSONObject buildUserAddedBroadcastMessage(String userName) {
+        JSONObject content = new JSONObject();
+
+        JSONObject header = buildEventHeader(userName);
+        JSONObject body = buildEventBody(Constants.USER_ADDED_EVT_NAME,
+                content);
+
+        return buildEventMessage(header, body);
+    }
+
+    /**
+     * Builds the user removed broadcast message.
+     *
+     * @param userName       the user name
+     * @param acknowledgment the acknowledgment
+     * @return the JSON object
+     */
+    public static JSONObject buildUserRemovedBroadcastMessage(String userName) {
+        JSONObject content = new JSONObject();
+
+        JSONObject header = buildEventHeader(userName);
+        JSONObject body = buildEventBody(Constants.USER_REMOVED_EVT_NAME,
+                content);
+
+        return buildEventMessage(header, body);
+    }
+
+    /**
+     * Builds the kick user out message.
+     *
+     * @param userName the user name
+     * @return the JSON object
+     */
+    public static JSONObject buildKickUserOutMessage(String userName) {
+        JSONObject content = new JSONObject();
+
+        JSONObject header = buildEventHeader(userName);
+        JSONObject body = buildEventBody(
+                Constants.MANGER_KICK_USER_OUT_EVT_NAME, content);
+
+        return buildEventMessage(header, body);
+    }
+
+    /**
+     * Builds the all online user syn message.
+     *
+     * @param userNameList the user name list
+     * @return the JSON object
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONObject buildAllOnlineUserSynMessage(
+            ArrayList<String> userNameList) {
+        JSONObject content = new JSONObject();
+        JSONArray array = new JSONArray();
+        for (String userName : userNameList) {
+            array.add(userName);
+        }
+        content.put(Constants.USER_NAME_LIST_ATTR, array);
+
+        JSONObject header = buildEventHeader("");
+        JSONObject body = buildEventBody(
+                Constants.ALL_ONLINE_USERS_SYN_EVT_NAME, content);
 
         return buildEventMessage(header, body);
     }

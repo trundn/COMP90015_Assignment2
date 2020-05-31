@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 import org.json.simple.JSONObject;
 
 /**
@@ -79,6 +81,15 @@ public class ClientHandlerJob extends AbstractJob {
             for (SocketConnection tobeBroadcasted : SocketManager.getInstance()
                     .getAllUserConnectionList()) {
                 tobeBroadcasted.send(broadcastMessage);
+            }
+        } else {
+            String userName = this.socketConnection.getUserName();
+            JSONObject userRemovedBroadcastMsg = EventMessageBuilder
+                    .buildUserRemovedBroadcastMessage(userName);
+            ArrayList<SocketConnection> tobeNotifiedUserList = SocketManager
+                    .getInstance().getUserConnectionList(userName);
+            for (SocketConnection tobeNotified : tobeNotifiedUserList) {
+                tobeNotified.send(userRemovedBroadcastMsg);
             }
         }
     }

@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 public class EventMessageParser {
@@ -22,6 +25,28 @@ public class EventMessageParser {
     public static final String extractUserName(JSONObject message) {
         JSONObject header = (JSONObject) message.get(Constants.MESSAGE_HEADER);
         return header.get(Constants.USER_NAME_ATTR).toString();
+    }
+
+    /**
+     * Extract user name list.
+     *
+     * @param message the message
+     * @return the array list
+     */
+    public static final ArrayList<String> extractUserNameList(
+            JSONObject message) {
+        JSONObject body = (JSONObject) message.get(Constants.MESSAGE_BODY);
+        JSONObject content = (JSONObject) body
+                .get(Constants.MESSAE_EVENT_CONTENT);
+
+        ArrayList<String> userNameList = new ArrayList<String>();
+        JSONArray array = (JSONArray) content
+                .get(Constants.USER_NAME_LIST_ATTR);
+        for (int index = 0; index < array.size(); index++) {
+            userNameList.add(array.get(index).toString());
+        }
+
+        return userNameList;
     }
 
     /**

@@ -61,6 +61,9 @@ public class EventMsgProcessJob extends AbstractJob {
             } else if (Constants.REQUEST_WHITEBOARD_JOIN_APPROVAL_ACK_EVT_NAME
                     .equalsIgnoreCase(eventName)) {
                 this.handleWhiteboardJoinRequestAcknowledgment();
+            } else if (Constants.MANGER_KICK_USER_OUT_EVT_NAME
+                    .equals(eventName)) {
+                this.handleMangerKickUserOut();
             } else if (Constants.LINE_SYN_EVT_NAME.equalsIgnoreCase(eventName)
                     || Constants.CIRCLE_SYN_EVT_NAME.equalsIgnoreCase(eventName)
                     || Constants.RECTANGLE_SYN_EVT_NAME
@@ -75,6 +78,16 @@ public class EventMsgProcessJob extends AbstractJob {
         }
 
         return null;
+    }
+
+    /**
+     * Handle manger kick user out.
+     */
+    private void handleMangerKickUserOut() {
+        String userName = EventMessageParser.extractUserName(this.message);
+        SocketConnection targetConnection = SocketManager.getInstance()
+                .getUserConnection(userName);
+        targetConnection.send(this.message);
     }
 
     /**
@@ -94,6 +107,26 @@ public class EventMsgProcessJob extends AbstractJob {
             String acknowledgment = EventMessageParser
                     .extractValFromMessage(this.message, Constants.ACK_ATTR);
             if (Constants.ACK_APPROVED.equalsIgnoreCase(acknowledgment)) {
+                this.connection.setJoinedWhiteboard(true);
+
+                // Broadcast new added user to all online peers
+                JSONObject userAddedBroadcastMsg = EventMessageBuilder
+                        .buildUserAddedBroadcastMessage(userName);
+                ArrayList<SocketConnection> tobeNotifiedUserList = SocketManager
+                        .getInstance().getUserConnectionList(userName);
+                for (SocketConnection tobeNotified : tobeNotifiedUserList) {
+                    tobeNotified.send(userAddedBroadcastMsg);
+                }
+
+                // Update all online peers for the current user
+                ArrayList<String> peerNameList = SocketManager.getInstance()
+                        .getNotManagerUserNameList(userName);
+                SocketConnection targetConnection = SocketManager.getInstance()
+                        .getUserConnection(userName);
+                targetConnection.send(EventMessageBuilder
+                        .buildAllOnlineUserSynMessage(peerNameList));
+
+                // Request the lasted white board from manager
                 SocketConnection whiteboardOwner = SocketManager.getInstance()
                         .getWhiteboardOwnerConnection();
                 if (whiteboardOwner != null) {
@@ -122,11 +155,7 @@ public class EventMsgProcessJob extends AbstractJob {
      * Handle white board synchronization.
      */
     private void handleWhiteboardSynchronization() {
-        String userName = EventMessageParser.extractUserName(this.message);
-
-        SocketConnection connection = SocketManager.getInstance()
-                .getUserConnection(userName);
-        connection.send(this.message);
+        handleMangerKickUserOut();
     }
 
     /**
@@ -161,19 +190,30 @@ public class EventMsgProcessJob extends AbstractJob {
                     EventMessageParser.extractValFromContent(eventContent,
                             Constants.MANAGER_ROLE_ATTR));
 
+            // Get user connection with manager role
+            SocketConnection owningWhiteboard = SocketManager.getInstance()
+                    .anyUserOwningWhiteboard();
+
             if (isManager) {
-                SocketConnection owningWhiteboard = SocketManager.getInstance()
-                        .anyUserOwningWhiteboard();
                 if (owningWhiteboard != null) {
                     // Do not allow 2 users to have a manager role
                     acknowledgment = Constants.ACK_MANAGER_EXISTED;
                 } else {
                     // Update manager role for this socket connection
                     this.connection.setManager(isManager);
-                    
+                    this.connection.setJoinedWhiteboard(true);
+
                     // Identify connection with manger role
                     SocketManager.getInstance()
                             .setWhiteboardOwnerConnection(this.connection);
+
+                    for (SocketConnection notJoinedUser : SocketManager
+                            .getInstance()
+                            .getNotJoinedWhiteboardConnectionList()) {
+                        this.connection.send(EventMessageBuilder
+                                .buildRequestWhiteboardJoinApprovalMessage(
+                                        notJoinedUser.getUserName()));
+                    }
                 }
             }
 
@@ -183,11 +223,10 @@ public class EventMsgProcessJob extends AbstractJob {
 
             // Send white board join approval request message to manager if
             // needed
-            if (Constants.ACK_OK.equalsIgnoreCase(acknowledgment)
+            if ((owningWhiteboard != null)
+                    && Constants.ACK_OK.equalsIgnoreCase(acknowledgment)
                     && !this.connection.isManager()) {
-                SocketConnection whiteboardOwner = SocketManager.getInstance()
-                        .getWhiteboardOwnerConnection();
-                whiteboardOwner.send(EventMessageBuilder
+                owningWhiteboard.send(EventMessageBuilder
                         .buildRequestWhiteboardJoinApprovalMessage(userName));
             }
         }

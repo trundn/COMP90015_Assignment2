@@ -2,6 +2,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -74,10 +75,15 @@ public class WhiteboardServer extends Application implements MessageCallback {
      */
     @Override
     public void onMessageChanged(String newMessage) {
-        if (!StringHelper.isNullOrEmpty(newMessage)) {
-            this.appLogArea.appendText(newMessage);
-            this.appLogArea.appendText(Constants.NEW_LINE);
-        }
+        Platform.runLater(() -> {
+            if (!StringHelper.isNullOrEmpty(newMessage)) {
+                if (this.appLogArea != null) {
+                    this.appLogArea.appendText(newMessage);
+                    this.appLogArea.appendText(Constants.NEW_LINE);
+                }
+            }
+        });
+
     }
 
     /**
