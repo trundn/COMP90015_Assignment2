@@ -183,12 +183,8 @@ public class EventMsgProcessJob extends AbstractJob {
 
             // Send white board join approval request message to manager if
             // needed
-            System.out.println("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVV");
-            System.out.println(this.connection.isManager());
             if (Constants.ACK_OK.equalsIgnoreCase(acknowledgment)
                     && !this.connection.isManager()) {
-                System.out.println(
-                        "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
                 SocketConnection whiteboardOwner = SocketManager.getInstance()
                         .getWhiteboardOwnerConnection();
                 whiteboardOwner.send(EventMessageBuilder
