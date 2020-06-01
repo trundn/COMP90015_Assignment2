@@ -57,6 +57,9 @@ public class Constants {
     /** The charset name. */
     public static final String CHARSET_NAME = "UTF-8";
 
+    /** The Constant DEFAULT_IMAGE_FILE_NAME. */
+    public static final String DEFAULT_IMAGE_FILE_NAME = "Untitled";
+
     /** The Constant USER_LIST_LABEL_TEXT. */
     public static final String USER_LIST_LABEL_TEXT = "User List";
 
@@ -126,6 +129,12 @@ public class Constants {
     /** The Constant CLOSE_BUTTON_TYPE_NAME. */
     public static final String CLOSE_BUTTON_TYPE_NAME = "Close";
 
+    /** The Constant SAVE_BUTTON_TYPE_NAME. */
+    public static final String SAVE_BUTTON_TYPE_NAME = "Save";
+
+    /** The Constant DONOT_SAVE_BUTTON_TYPE_NAME. */
+    public static final String DONOT_SAVE_BUTTON_TYPE_NAME = "Don't Save";
+
     /** The Constant ACK_OK. */
     public static final String ACK_OK = "OK";
 
@@ -192,6 +201,12 @@ public class Constants {
     /** The Constant TEXT_SYN_EVT_NAME. */
     public static final String TEXT_SYN_EVT_NAME = "text_synchronization";
 
+    /** The Constant WHITE_BOARD_CLEARED_EVT_NAME. */
+    public static final String WHITE_BOARD_CLEARED_EVT_NAME = "whiteboard_cleared_notification";
+
+    /** The Constant WHITE_BOARD_UPDATED_WITH_NEW_IMG_EVT_NAME. */
+    public static final String WHITE_BOARD_UPDATED_WITH_NEW_IMG_EVT_NAME = "whiteboard_new_updated_image_notification";
+
     /** The Constant MESSAGE_HEADER. */
     public static final String MESSAGE_HEADER = "header";
 
@@ -251,4 +266,7 @@ public class Constants {
 
     /** The Constant IMAGE_AS_STRING_ATTR. */
     public static final String IMAGE_AS_STRING_ATTR = "image_as_string";
+    
+    /** The Constant BROADCAST_NEW_IMAGE_ATTR. */
+    public static final String BROADCAST_NEW_IMAGE_ATTR = "broadcast_new_image";
 }

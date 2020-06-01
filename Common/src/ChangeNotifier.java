@@ -111,6 +111,15 @@ public class ChangeNotifier {
     }
 
     /**
+     * On white board cleared.
+     */
+    public void onwhiteboardCleared() {
+        if (this.communicationCallback != null) {
+            this.communicationCallback.onwhiteboardCleared();
+        }
+    }
+
+    /**
      * On user added notification.
      *
      * @param userName the user name
@@ -202,12 +211,14 @@ public class ChangeNotifier {
     /**
      * On whole white board acknowledgement.
      *
-     * @param imageAsString the image as string
+     * @param isBroadcastNewImage the is broadcast new image
+     * @param imageAsString       the image as string
      */
-    public void onWholeWhiteboardAcknowledgement(String imageAsString) {
+    public void onWholeWhiteboardAcknowledgement(boolean isBroadcastNewImage,
+            String imageAsString) {
         if (this.communicationCallback != null) {
-            this.communicationCallback
-                    .onWholeWhiteboardAcknowledgement(imageAsString);
+            this.communicationCallback.onWholeWhiteboardAcknowledgement(
+                    isBroadcastNewImage, imageAsString);
         }
     }
 

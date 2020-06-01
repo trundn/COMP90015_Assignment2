@@ -359,6 +359,36 @@ public class EventMessageBuilder {
     }
 
     /**
+     * Builds the white board cleared message.
+     *
+     * @return the JSON object
+     */
+    public static final JSONObject buildWhiteboardClearedMessage() {
+        JSONObject content = new JSONObject();
+
+        JSONObject header = buildEventHeader("");
+        JSONObject body = buildEventBody(Constants.WHITE_BOARD_CLEARED_EVT_NAME,
+                content);
+
+        return buildEventMessage(header, body);
+    }
+
+    /**
+     * Builds the white board updated with new image message.
+     *
+     * @return the JSON object
+     */
+    public static final JSONObject buildWhiteboardUpdatedWithNewImgMessage() {
+        JSONObject content = new JSONObject();
+
+        JSONObject header = buildEventHeader("");
+        JSONObject body = buildEventBody(
+                Constants.WHITE_BOARD_UPDATED_WITH_NEW_IMG_EVT_NAME, content);
+
+        return buildEventMessage(header, body);
+    }
+
+    /**
      * Builds the white board synchronization message.
      *
      * @param userName the user name
@@ -386,6 +416,9 @@ public class EventMessageBuilder {
             String imageAsString) {
         JSONObject content = new JSONObject();
         content.put(Constants.IMAGE_AS_STRING_ATTR, imageAsString);
+        if (StringHelper.isNullOrEmpty(userName)) {
+            content.put(Constants.BROADCAST_NEW_IMAGE_ATTR, true);
+        }
 
         JSONObject header = buildEventHeader(userName);
         JSONObject body = buildEventBody(

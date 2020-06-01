@@ -68,17 +68,39 @@ public class AlertHelper {
         alert.initOwner(owner);
         return alert.showAndWait();
     }
-    
+
+    /**
+     * Show confirmation.
+     *
+     * @param owner   the owner
+     * @param title   the title
+     * @param message the message
+     * @param button1 the button 1
+     * @param button2 the button 2
+     * @param button3 the button 3
+     * @return the optional
+     */
+    public static Optional<ButtonType> showConfirmation(Window owner,
+            String title, String message, ButtonType button1,
+            ButtonType button2, ButtonType button3) {
+        Alert alert = new Alert(AlertType.CONFIRMATION, message, button1,
+                button2, button3);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.initOwner(owner);
+        return alert.showAndWait();
+    }
+
     /**
      * Show warning.
      *
-     * @param owner the owner
-     * @param title the title
+     * @param owner   the owner
+     * @param title   the title
      * @param message the message
      * @return the optional
      */
-    public static Optional<ButtonType> showWarning(Window owner,
-            String title, String message) {
+    public static Optional<ButtonType> showWarning(Window owner, String title,
+            String message) {
         Alert alert = new Alert(AlertType.WARNING, message, ButtonType.OK);
         alert.setTitle(title);
         alert.setHeaderText(null);

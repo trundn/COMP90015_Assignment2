@@ -74,10 +74,38 @@ public class EventMsgProcessJob extends AbstractJob {
             } else if (Constants.WHITE_BOARD_SYS_ACKNOWLEDGMENT
                     .equalsIgnoreCase(eventName)) {
                 this.handleWhiteboardSynchronization();
+            } else if (Constants.WHITE_BOARD_CLEARED_EVT_NAME
+                    .equalsIgnoreCase(eventName)) {
+                this.handleWhiteboardCleared();
+            } else if (Constants.WHITE_BOARD_UPDATED_WITH_NEW_IMG_EVT_NAME
+                    .equalsIgnoreCase(eventName)) {
+                this.handleWhiteboardNewUpdatedImage();
             }
         }
 
         return null;
+    }
+
+    /**
+     * Handle white board new updated image.
+     */
+    private void handleWhiteboardNewUpdatedImage() {
+        SocketConnection whiteboardOwner = SocketManager.getInstance()
+                .getWhiteboardOwnerConnection();
+        if (whiteboardOwner != null) {
+            whiteboardOwner
+                    .send(EventMessageBuilder.buildWhiteboardSynMessage(""));
+        }
+    }
+
+    /**
+     * Handle white board cleared.
+     */
+    private void handleWhiteboardCleared() {
+        for (SocketConnection tobeNotified : SocketManager.getInstance()
+                .getNotManagerConnectionList()) {
+            tobeNotified.send(this.message);
+        }
     }
 
     /**
@@ -155,7 +183,18 @@ public class EventMsgProcessJob extends AbstractJob {
      * Handle white board synchronization.
      */
     private void handleWhiteboardSynchronization() {
-        handleMangerKickUserOut();
+        String userName = EventMessageParser.extractUserName(this.message);
+
+        if (StringHelper.isNullOrEmpty(userName)) {
+            for (SocketConnection peer : SocketManager.getInstance()
+                    .getNotManagerConnectionList()) {
+                peer.send(this.message);
+            }
+        } else {
+            SocketConnection connection = SocketManager.getInstance()
+                    .getUserConnection(userName);
+            connection.send(this.message);
+        }
     }
 
     /**

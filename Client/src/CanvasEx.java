@@ -48,6 +48,8 @@ public class CanvasEx extends Canvas {
     /** The draw tool type. */
     private DrawToolType drawToolType = DrawToolType.NONE;
 
+    private CanvasCallback canvasCallback;
+
     /** The lock. */
     private Object lock = new Object();
 
@@ -67,6 +69,33 @@ public class CanvasEx extends Canvas {
         // Register mouse events
         this.registerMousePressedEvent();
         this.registerMouseReleasedEvent();
+    }
+
+    /**
+     * Register callback.
+     *
+     * @param callback the callback
+     */
+    public void registerCallback(CanvasCallback callback) {
+        this.canvasCallback = callback;
+    }
+
+    /**
+     * Unregister callback.
+     *
+     * @param callback the callback
+     */
+    public void unregisterCallback(CanvasCallback callback) {
+        this.canvasCallback = null;
+    }
+
+    /**
+     * Notify canvas changed.
+     */
+    public void notifyCanvasChanged() {
+        if (this.canvasCallback != null) {
+            this.canvasCallback.onShapeChanged();
+        }
     }
 
     /**
@@ -135,6 +164,11 @@ public class CanvasEx extends Canvas {
 
             Image image = SwingFXUtils.toFXImage(capture, null);
             this.drawImage(image);
+
+            File file = new File("synchronization.png");
+            if (file.exists()) {
+                file.delete();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -212,6 +246,7 @@ public class CanvasEx extends Canvas {
         synchronized (this.lock) {
             this.gc.fillText(expectedText, startX, startY);
             this.gc.strokeText(expectedText, startX, startY);
+            this.notifyCanvasChanged();
         }
     }
 
@@ -227,6 +262,7 @@ public class CanvasEx extends Canvas {
             double endY) {
         synchronized (this.lock) {
             this.gc.strokeLine(startX, startY, endX, endY);
+            this.notifyCanvasChanged();
         }
     }
 
@@ -240,6 +276,7 @@ public class CanvasEx extends Canvas {
     public void drawCircle(double centerX, double centerY, double radius) {
         synchronized (this.lock) {
             this.gc.strokeOval(centerX, centerY, radius, radius);
+            this.notifyCanvasChanged();
         }
     }
 
@@ -255,6 +292,7 @@ public class CanvasEx extends Canvas {
             double height) {
         synchronized (this.lock) {
             this.gc.strokeRect(startX, startY, width, height);
+            this.notifyCanvasChanged();
         }
     }
 

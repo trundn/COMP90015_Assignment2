@@ -45,6 +45,9 @@ public class RetrieveMsgJob extends AbstractJob {
                     ChangeNotifier.getInstance()
                             .onWhiteboardJoinApprovalAcknowledgement(
                                     acknowledgment);
+                } else if (Constants.WHITE_BOARD_CLEARED_EVT_NAME
+                        .equalsIgnoreCase(eventName)) {
+                    ChangeNotifier.getInstance().onwhiteboardCleared();
                 } else if (Constants.USER_ADDED_EVT_NAME
                         .equalsIgnoreCase(eventName)) {
                     ChangeNotifier.getInstance()
@@ -79,15 +82,25 @@ public class RetrieveMsgJob extends AbstractJob {
                             .onWholeWhiteboardRequested(userName);
                 } else if (Constants.WHITE_BOARD_SYS_ACKNOWLEDGMENT
                         .equalsIgnoreCase(eventName)) {
-                    String imageAsString = EventMessageParser
-                            .extractValFromMessage(message,
-                                    Constants.IMAGE_AS_STRING_ATTR);
-                    ChangeNotifier.getInstance()
-                            .onWholeWhiteboardAcknowledgement(imageAsString);
+                    this.handleWhiteboardSynchronization(message, userName);
                 }
             }
         }
 
         return null;
+    }
+
+    private void handleWhiteboardSynchronization(JSONObject message,
+            String userName) {
+        String imageAsString = EventMessageParser.extractValFromMessage(message,
+                Constants.IMAGE_AS_STRING_ATTR);
+        boolean isBroadcastNewImage = false;
+        if (StringHelper.isNullOrEmpty(userName)) {
+            isBroadcastNewImage = EventMessageParser
+                    .extractBooleanValueFromMessage(message,
+                            Constants.BROADCAST_NEW_IMAGE_ATTR);
+        }
+        ChangeNotifier.getInstance().onWholeWhiteboardAcknowledgement(
+                isBroadcastNewImage, imageAsString);
     }
 }

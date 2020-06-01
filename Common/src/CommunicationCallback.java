@@ -77,9 +77,15 @@ public interface CommunicationCallback {
     void onWholeWhiteboardRequested(String requestUserName);
 
     /**
-     * On whole white board acknowledgement.
+     * On whole whiteboard acknowledgement.
      *
+     * @param isBroadcastNewImage the is broadcast new image
      * @param imageAsString the image as string
      */
-    void onWholeWhiteboardAcknowledgement(String imageAsString);
+    void onWholeWhiteboardAcknowledgement(boolean isBroadcastNewImage, String imageAsString);
+
+    /**
+     * On white board cleared.
+     */
+    void onwhiteboardCleared();
 }

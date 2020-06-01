@@ -113,4 +113,17 @@ public class EventMessageParser {
         return Double.parseDouble(value);
     }
 
+    /**
+     * Extract boolean value from message.
+     *
+     * @param message   the message
+     * @param paramName the parameter name
+     * @return true, if successful
+     */
+    public static final boolean extractBooleanValueFromMessage(
+            JSONObject message, String paramName) {
+        String value = extractValFromMessage(message, paramName);
+        return Boolean.parseBoolean(value);
+    }
+
 }

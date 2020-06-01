@@ -136,13 +136,31 @@ public class SocketManager {
             String exceptForUser) {
         ArrayList<SocketConnection> returnList = new ArrayList<SocketConnection>();
 
-        if (!StringHelper.isNullOrEmpty(exceptForUser)) {
-            for (SocketConnection connection : this.connectionMap.values()) {
-                String userName = connection.getUserName();
-                if (!StringHelper.isNullOrEmpty(userName)
-                        && !userName.equalsIgnoreCase(exceptForUser)) {
-                    returnList.add(connection);
-                }
+        for (SocketConnection connection : this.connectionMap.values()) {
+            String userName = connection.getUserName();
+
+            if (!StringHelper.isNullOrEmpty(userName)
+                    && (StringHelper.isNullOrEmpty(exceptForUser)
+                            || !userName.equalsIgnoreCase(exceptForUser))) {
+                returnList.add(connection);
+            }
+
+        }
+
+        return returnList;
+    }
+
+    /**
+     * Gets the not manager connection list.
+     *
+     * @return the not manager connection list
+     */
+    public synchronized ArrayList<SocketConnection> getNotManagerConnectionList() {
+        ArrayList<SocketConnection> returnList = new ArrayList<SocketConnection>();
+
+        for (SocketConnection connection : this.connectionMap.values()) {
+            if (!connection.isManager()) {
+                returnList.add(connection);
             }
         }
 
@@ -195,14 +213,14 @@ public class SocketManager {
             String exceptForUser) {
         ArrayList<String> returnList = new ArrayList<String>();
 
-        if (!StringHelper.isNullOrEmpty(exceptForUser)) {
-            for (SocketConnection connection : this.connectionMap.values()) {
-                if (!connection.isManager()) {
-                    String userName = connection.getUserName();
-                    if (!StringHelper.isNullOrEmpty(userName)
-                            && !userName.equalsIgnoreCase(exceptForUser)) {
-                        returnList.add(connection.getUserName());
-                    }
+        for (SocketConnection connection : this.connectionMap.values()) {
+            if (!connection.isManager()) {
+                String userName = connection.getUserName();
+
+                if (!StringHelper.isNullOrEmpty(userName)
+                        && (StringHelper.isNullOrEmpty(exceptForUser)
+                                || !userName.equalsIgnoreCase(exceptForUser))) {
+                    returnList.add(connection.getUserName());
                 }
             }
         }

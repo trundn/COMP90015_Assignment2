@@ -45,7 +45,7 @@ import javafx.stage.Window;
  * The Class WhiteboardClient.
  */
 public class WhiteboardClient extends Application
-        implements MessageCallback, CommunicationCallback {
+        implements MessageCallback, CommunicationCallback, CanvasCallback {
 
     /** The owner. */
     private Window owner;
@@ -94,6 +94,9 @@ public class WhiteboardClient extends Application
 
     /** The keep save image path. */
     private String keepSaveImagePath = "";
+
+    /** The is white board changed. */
+    private boolean isWhiteboardChanged = false;
 
     /**
      * The main method.
@@ -177,6 +180,7 @@ public class WhiteboardClient extends Application
         // Create canvas extension
         this.canvas = new CanvasEx(Constants.CANVAS_WIDTH,
                 Constants.CANVAS_HEIGHT);
+        this.canvas.registerCallback(this);
 
         // Create menu bar and tool bar
         this.mainMenuBar = createMenuBar(stage);
@@ -412,23 +416,49 @@ public class WhiteboardClient extends Application
 
         // Register action for New menu item
         newMenuItem.setOnAction(evt -> {
+            boolean isContinueWorkFlow = true;
+
             this.keepSaveImagePath = "";
-            this.canvas.clearGraphicsContext();
+            if (this.isWhiteboardChanged) {
+                isContinueWorkFlow = this.confirmSaveChanges();
+            }
+
+            if (isContinueWorkFlow) {
+                this.isWhiteboardChanged = false;
+                this.canvas.clearGraphicsContext();
+
+                SocketHandler.getInstance().send(
+                        EventMessageBuilder.buildWhiteboardClearedMessage());
+            }
         });
 
         // Register action for Open menu item
         openMenuItem.setOnAction(evt -> {
-            FileChooser openFile = buildFileChooser(Constants.OPEN_FILE_TILE);
+            boolean isContinueWorkFlow = true;
 
-            File file = openFile.showOpenDialog(stage);
-            if (file != null) {
-                try {
-                    InputStream io = new FileInputStream(file);
-                    Image img = new Image(io);
-                    this.canvas.drawImage(img);
-                    this.keepSaveImagePath = file.getAbsolutePath();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+            if (this.isWhiteboardChanged) {
+                isContinueWorkFlow = this.confirmSaveChanges();
+            }
+
+            if (isContinueWorkFlow) {
+                FileChooser openFile = buildFileChooser(
+                        Constants.OPEN_FILE_TILE);
+
+                File file = openFile.showOpenDialog(stage);
+                if (file != null) {
+                    try {
+                        InputStream io = new FileInputStream(file);
+                        Image img = new Image(io);
+                        this.canvas.drawImage(img);
+
+                        this.keepSaveImagePath = file.getAbsolutePath();
+                        this.isWhiteboardChanged = false;
+
+                        SocketHandler.getInstance().send(EventMessageBuilder
+                                .buildWhiteboardUpdatedWithNewImgMessage());
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
         });
@@ -447,6 +477,7 @@ public class WhiteboardClient extends Application
             }
 
             if (file != null) {
+                this.isWhiteboardChanged = false;
                 this.canvas.saveImage(file);
             }
         });
@@ -458,6 +489,8 @@ public class WhiteboardClient extends Application
 
             File file = saveAsFile.showSaveDialog(stage);
             if (file != null) {
+                this.isWhiteboardChanged = false;
+                this.keepSaveImagePath = file.getAbsolutePath();
                 this.canvas.saveImage(file);
             }
         });
@@ -474,6 +507,53 @@ public class WhiteboardClient extends Application
         menuBar.getMenus().add(fileMenu);
 
         return menuBar;
+    }
+
+    /**
+     * Confirm save changes.
+     *
+     * @return true, if successful
+     */
+    private boolean confirmSaveChanges() {
+        boolean isContineWorkFlow = true;
+
+        ButtonType saveType = new ButtonType(Constants.SAVE_BUTTON_TYPE_NAME);
+        ButtonType dontSaveType = new ButtonType(
+                Constants.DONOT_SAVE_BUTTON_TYPE_NAME);
+        ButtonType cancelType = new ButtonType(
+                Constants.CANCEL_BUTTON_TYPE_NAME);
+
+        Optional<ButtonType> result = AlertHelper.showConfirmation(this.owner,
+                "Confirmation",
+                String.format("Do you want to save changes to %s?",
+                        Constants.DEFAULT_IMAGE_FILE_NAME),
+                saveType, dontSaveType, cancelType);
+
+        if (result.get() == saveType) {
+            FileChooser saveFile = buildFileChooser(
+                    Constants.SAVE_AS_FILE_TITLE);
+            saveFile.setInitialFileName(Constants.DEFAULT_IMAGE_FILE_NAME);
+
+            File file = saveFile.showSaveDialog(this.owner);
+            if (file != null) {
+                this.canvas.saveImage(file);
+            }
+        } else if (result.get() == cancelType) {
+            isContineWorkFlow = false;
+        }
+
+        return isContineWorkFlow;
+    }
+
+    /**
+     * On shape changed.
+     */
+    @Override
+    public void onShapeChanged() {
+        if (UserInformation.getInstance().isManager()) {
+            this.isWhiteboardChanged = true;
+        }
+
     }
 
     /**
@@ -512,16 +592,6 @@ public class WhiteboardClient extends Application
      */
     @Override
     public void onConnectionStatusChanged(boolean isConnected) {
-        Platform.runLater(() -> {
-            if (this.toolbarVBox != null) {
-                this.toolbarVBox.setDisable(!isConnected);
-            }
-
-            if (this.canvas != null) {
-                this.canvas.setDisable(!isConnected);
-            }
-        });
-
         if (isConnected) {
             UserInformation instance = UserInformation.getInstance();
             JSONObject request = EventMessageBuilder
@@ -529,6 +599,16 @@ public class WhiteboardClient extends Application
                             instance.isManager());
 
             SocketHandler.getInstance().send(request);
+        } else {
+            Platform.runLater(() -> {
+                if (this.toolbarVBox != null) {
+                    this.toolbarVBox.setDisable(true);
+                }
+
+                if (this.canvas != null) {
+                    this.canvas.setDisable(true);
+                }
+            });
         }
     }
 
@@ -539,8 +619,9 @@ public class WhiteboardClient extends Application
      */
     @Override
     public void onHandshakeEstablishmentChanged(String acknowledgement) {
-        if (Constants.ACK_USER_NAME_EXISTED.equalsIgnoreCase(acknowledgement)) {
-            Platform.runLater(() -> {
+        Platform.runLater(() -> {
+            if (Constants.ACK_USER_NAME_EXISTED
+                    .equalsIgnoreCase(acknowledgement)) {
                 Optional<ButtonType> result = AlertHelper.showWarning(
                         this.owner, "Warning",
                         String.format(
@@ -549,21 +630,28 @@ public class WhiteboardClient extends Application
                 if (result.get() == ButtonType.OK) {
                     Platform.exit();
                 }
-            });
-        } else if (Constants.ACK_MANAGER_EXISTED
-                .equalsIgnoreCase(acknowledgement)) {
-            Platform.runLater(() -> {
+            } else if (Constants.ACK_MANAGER_EXISTED
+                    .equalsIgnoreCase(acknowledgement)) {
                 Optional<ButtonType> result = AlertHelper.showWarning(
-                        this.owner, "Confirmation",
+                        this.owner, "Warning",
                         "There is already a user with the manager role."
                                 + "The application will be closed.");
 
                 if (result.get() == ButtonType.OK) {
                     Platform.exit();
                 }
-            });
+            } else if (Constants.ACK_OK.equalsIgnoreCase(acknowledgement)) {
+                if (UserInformation.getInstance().isManager()) {
+                    if (this.toolbarVBox != null) {
+                        this.toolbarVBox.setDisable(false);
+                    }
 
-        }
+                    if (this.canvas != null) {
+                        this.canvas.setDisable(false);
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -610,6 +698,14 @@ public class WhiteboardClient extends Application
                 AlertHelper.showAlert(AlertType.INFORMATION, this.owner,
                         "Information.",
                         "The whiteboard manager apporved your join request. You can edit shared whiteboard now.");
+
+                if (this.toolbarVBox != null) {
+                    this.toolbarVBox.setDisable(false);
+                }
+
+                if (this.canvas != null) {
+                    this.canvas.setDisable(false);
+                }
             } else if (Constants.ACK_CANCELED
                     .equalsIgnoreCase(acknowledgement)) {
 
@@ -751,13 +847,38 @@ public class WhiteboardClient extends Application
      * @param imageAsString the image as string
      */
     @Override
-    public void onWholeWhiteboardAcknowledgement(String imageAsString) {
+    public void onWholeWhiteboardAcknowledgement(boolean isBroadcastNewImage,
+            String imageAsString) {
         if (!StringHelper.isNullOrEmpty(imageAsString)) {
             Platform.runLater(() -> {
-                this.canvas.drawImage(imageAsString);
+                if (isBroadcastNewImage) {
+                    Optional<ButtonType> result = AlertHelper.showWarning(
+                            this.owner, "Warning",
+                            "The manager updated whiteboard with a new image.");
+
+                    if (result.get() == ButtonType.OK) {
+                        this.canvas.drawImage(imageAsString);
+                    }
+                } else {
+                    this.canvas.drawImage(imageAsString);
+                }
             });
         }
 
+    }
+
+    /**
+     * On white board cleared.
+     */
+    @Override
+    public void onwhiteboardCleared() {
+        Platform.runLater(() -> {
+            Optional<ButtonType> result = AlertHelper.showWarning(this.owner,
+                    "Warning", "The manager cleared the shared whiteboard.");
+            if (result.get() == ButtonType.OK) {
+                this.canvas.clearGraphicsContext();
+            }
+        });
     }
 
     /**
@@ -847,5 +968,4 @@ public class WhiteboardClient extends Application
             this.canvas.drawText(startX, startY, text);
         });
     }
-
 }
