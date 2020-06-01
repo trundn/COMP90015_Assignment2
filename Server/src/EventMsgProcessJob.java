@@ -135,7 +135,7 @@ public class EventMsgProcessJob extends AbstractJob {
             String acknowledgment = EventMessageParser
                     .extractValFromMessage(this.message, Constants.ACK_ATTR);
             if (Constants.ACK_APPROVED.equalsIgnoreCase(acknowledgment)) {
-                this.connection.setJoinedWhiteboard(true);
+                existedConnection.setJoinedWhiteboard(true);
 
                 // Broadcast new added user to all online peers
                 JSONObject userAddedBroadcastMsg = EventMessageBuilder
@@ -148,10 +148,8 @@ public class EventMsgProcessJob extends AbstractJob {
 
                 // Update all online peers for the current user
                 ArrayList<String> peerNameList = SocketManager.getInstance()
-                        .getNotManagerUserNameList(userName);
-                SocketConnection targetConnection = SocketManager.getInstance()
-                        .getUserConnection(userName);
-                targetConnection.send(EventMessageBuilder
+                        .getUserNameList(userName);
+                existedConnection.send(EventMessageBuilder
                         .buildAllOnlineUserSynMessage(peerNameList));
 
                 // Request the lasted white board from manager

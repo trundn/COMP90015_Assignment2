@@ -205,7 +205,11 @@ public class WhiteboardClient extends Application
         stage.setScene(scene);
 
         // Set the Title of the Stage
-        stage.setTitle("Whiteboard Client");
+        if (UserInformation.getInstance().isManager()) {
+            stage.setTitle("Whiteboard Manager");
+        } else {
+            stage.setTitle("Whiteboard User");
+        }
 
         // Disable maximum button
         stage.setResizable(false);
@@ -635,7 +639,7 @@ public class WhiteboardClient extends Application
                 Optional<ButtonType> result = AlertHelper.showWarning(
                         this.owner, "Warning",
                         "There is already a user with the manager role."
-                                + "The application will be closed.");
+                                + " The application will be closed.");
 
                 if (result.get() == ButtonType.OK) {
                     Platform.exit();
@@ -712,7 +716,7 @@ public class WhiteboardClient extends Application
                 Optional<ButtonType> result = AlertHelper.showWarning(
                         this.owner, "Warning",
                         "The whiteboard manager does not approve your join request."
-                                + "The application will be closed.");
+                                + " The application will be closed.");
 
                 if (result.get() == ButtonType.OK) {
                     Platform.exit();
@@ -759,7 +763,7 @@ public class WhiteboardClient extends Application
         Platform.runLater(() -> {
             Optional<ButtonType> result = AlertHelper.showWarning(this.owner,
                     "Warning", "The white board manager kicked you out."
-                            + "The application will be closed.");
+                            + " The application will be closed.");
 
             if (result.get() == ButtonType.OK) {
                 Platform.exit();
@@ -777,7 +781,12 @@ public class WhiteboardClient extends Application
             ArrayList<String> userNameList) {
         Platform.runLater(() -> {
             if (userNameList != null && !userNameList.isEmpty()) {
-                this.userListView.getItems().addAll(userNameList);
+                for (String tobeAdded : userNameList) {
+                    int index = this.userListView.getItems().indexOf(tobeAdded);
+                    if (index == -1) {
+                        this.userListView.getItems().add(tobeAdded);
+                    }
+                }
             }
         });
     }
@@ -791,8 +800,8 @@ public class WhiteboardClient extends Application
             Optional<ButtonType> result = AlertHelper.showWarning(this.owner,
                     "Warning",
                     "The white board manager shutted down."
-                            + "The shared whiteboard is not allowed to edit."
-                            + "The application will be closed.");
+                            + " The shared whiteboard is not allowed to edit."
+                            + " The application will be closed.");
 
             if (result.get() == ButtonType.OK) {
                 Platform.exit();

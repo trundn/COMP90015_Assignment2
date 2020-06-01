@@ -83,13 +83,15 @@ public class ClientHandlerJob extends AbstractJob {
                 tobeBroadcasted.send(broadcastMessage);
             }
         } else {
-            String userName = this.socketConnection.getUserName();
-            JSONObject userRemovedBroadcastMsg = EventMessageBuilder
-                    .buildUserRemovedBroadcastMessage(userName);
-            ArrayList<SocketConnection> tobeNotifiedUserList = SocketManager
-                    .getInstance().getUserConnectionList(userName);
-            for (SocketConnection tobeNotified : tobeNotifiedUserList) {
-                tobeNotified.send(userRemovedBroadcastMsg);
+            if (this.socketConnection.isJoinedWhiteboard()) {
+                String userName = this.socketConnection.getUserName();
+                JSONObject userRemovedBroadcastMsg = EventMessageBuilder
+                        .buildUserRemovedBroadcastMessage(userName);
+                ArrayList<SocketConnection> tobeNotifiedUserList = SocketManager
+                        .getInstance().getUserConnectionList(userName);
+                for (SocketConnection tobeNotified : tobeNotifiedUserList) {
+                    tobeNotified.send(userRemovedBroadcastMsg);
+                }
             }
         }
     }

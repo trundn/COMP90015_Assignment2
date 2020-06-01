@@ -228,4 +228,27 @@ public class SocketManager {
         return returnList;
     }
 
+    /**
+     * Gets the user name list.
+     *
+     * @param exceptForUser the except for user
+     * @return the user name list
+     */
+    public synchronized ArrayList<String> getUserNameList(
+            String exceptForUser) {
+        ArrayList<String> returnList = new ArrayList<String>();
+
+        for (SocketConnection connection : this.connectionMap.values()) {
+            String userName = connection.getUserName();
+
+            if (!StringHelper.isNullOrEmpty(userName)
+                    && (StringHelper.isNullOrEmpty(exceptForUser)
+                            || !userName.equalsIgnoreCase(exceptForUser))) {
+                returnList.add(connection.getUserName());
+            }
+        }
+
+        return returnList;
+    }
+
 }
